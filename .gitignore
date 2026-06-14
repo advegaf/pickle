@@ -1,0 +1,28 @@
+# Xcode / build
+build/
+DerivedData/
+*.xcodeproj
+!project.yml
+*.xcworkspace
+xcuserdata/
+*.xcuserstate
+*.moved-aside
+
+# Generated Info.plist (XcodeGen writes these from project.yml)
+Pickle/Info.plist
+PickleWidget/Info.plist
+
+# Secrets — never commit
+Config/Secrets.xcconfig
+
+# macOS junk
+.DS_Store
+Icon?
+**/Icon?
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# Reference frames (large screenshots, kept locally for the fidelity loop)
+Equinox+ iOS Frames/
