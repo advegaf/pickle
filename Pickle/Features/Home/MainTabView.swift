@@ -15,7 +15,7 @@ struct MainTabView: View {
                 switch selection {
                 case 0: HomeView(onLog: { logRequest = LogRequest(meal: .snack) },
                                  onLogMeal: { logRequest = LogRequest(meal: $0) })
-                case 1: PlaceholderTab(title: "Explore")
+                case 1: ExploreView()
                 case 2: PlaceholderTab(title: "Coach")
                 case 3: ActivityView()
                 default: PlaceholderTab(title: "More")

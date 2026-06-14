@@ -1,0 +1,102 @@
+[
+  {
+    "id": "protein-basics",
+    "eyebrow": "Fundamentals",
+    "title": "How much protein do you actually need?",
+    "subtitle": "The number most people get wrong.",
+    "readMins": 4,
+    "body": [
+      "Protein is the one macro it's hard to overshoot and easy to undershoot. For most people training a few times a week, somewhere around 1.6 to 2.2 grams per kilogram of body weight per day is the range the research keeps landing on.",
+      "If you weigh 75 kg, that's roughly 120 to 165 grams a day. It sounds like a lot until you spread it across your meals: a palm of meat or fish, a scoop of Greek yogurt, a couple of eggs, and you're already most of the way there.",
+      "Why it matters: protein is the most satiating macro, it costs the most energy to digest, and it's the raw material your body uses to hold onto muscle while you're in a deficit. When people lose weight and end up softer instead of leaner, low protein is usually the reason.",
+      "The simplest habit that moves the needle: anchor every meal with a protein source first, then build the rest of the plate around it."
+    ]
+  },
+  {
+    "id": "calorie-deficit",
+    "eyebrow": "Fundamentals",
+    "title": "A calorie deficit, explained without the noise",
+    "subtitle": "Fat loss is one equation. Everything else is detail.",
+    "readMins": 5,
+    "body": [
+      "To lose fat, you have to take in less energy than you burn over time. That's it. Every diet that has ever worked, worked because it created that gap, whether it admitted it or not.",
+      "The honest part nobody likes: your maintenance number is a moving target. It drifts with your weight, your activity, your sleep, even the temperature. A formula gives you a starting estimate, not the truth.",
+      "That's why Pickle doesn't just hand you a number and walk away. It watches what you actually log and how your weight actually trends, then nudges your target toward the truth each week. The formula is the first guess. Your data is the correction.",
+      "Practical rule: aim for a deficit you can sustain, not the steepest one you can survive. Half a kilo a week is plenty for most people, and it leaves enough food on the table that you don't quit."
+    ]
+  },
+  {
+    "id": "reading-labels",
+    "eyebrow": "Skills",
+    "title": "Reading a nutrition label in ten seconds",
+    "subtitle": "What to look at, and what to ignore.",
+    "readMins": 3,
+    "body": [
+      "Start with the serving size. Everything else on the label is per serving, and serving sizes are often smaller than what you'd actually eat. If the package has two servings and you ate the whole thing, double every number.",
+      "Then calories and protein. Those two tell you most of what you need to decide whether a food fits your day.",
+      "Ignore the front of the package entirely. 'High protein', 'all natural', 'keto friendly' are marketing, not nutrition. The back of the package is where the facts live.",
+      "When a barcode scan or search gives you a number that looks off, trust your eyes. A 300-calorie 'salad' with creamy dressing and cheese is plausible. A 30-calorie one is a data error."
+    ]
+  },
+  {
+    "id": "fiber",
+    "eyebrow": "Fundamentals",
+    "title": "Fiber is the macro you're not tracking",
+    "subtitle": "Cheap satiety, hiding in plain sight.",
+    "readMins": 3,
+    "body": [
+      "Fiber doesn't get its own ring on most trackers, but it quietly does a lot of the work. It slows digestion, blunts blood-sugar spikes, and makes meals feel bigger than their calorie count suggests.",
+      "Most people get half of what they should. The fix isn't a supplement, it's volume: vegetables, fruit, beans, oats, whole grains. Foods that take up room on the plate for very little energy.",
+      "A useful trick when you're hungry on a deficit: add fiber and water-heavy foods before you add fat. A big pile of vegetables changes how full a meal feels far more than its calories would predict."
+    ]
+  },
+  {
+    "id": "eating-out",
+    "eyebrow": "Skills",
+    "title": "Logging meals you didn't cook",
+    "subtitle": "Estimating without losing the plot.",
+    "readMins": 4,
+    "body": [
+      "Restaurant food is where tracking feels impossible, so people give up for the night and the night becomes a habit. The goal isn't perfection here, it's a reasonable estimate that keeps you honest.",
+      "Build the plate in your head from its parts: a protein, a starch, a fat. Most restaurant meals are a palm of protein, a fist or two of carbs, and more oil or butter than you'd use at home. Estimate generously on the fat.",
+      "A photo estimate gets you most of the way in a few seconds. Adjust the portion to match what you actually ate and move on. A close estimate logged beats a perfect one skipped.",
+      "And if you genuinely have no idea, log your best guess and round up. The cost of slightly overestimating one meal is nothing. The cost of logging nothing is a blind spot that grows."
+    ]
+  },
+  {
+    "id": "weight-fluctuation",
+    "eyebrow": "Mindset",
+    "title": "Why the scale jumped 2 pounds overnight",
+    "subtitle": "It wasn't fat. Here's what it was.",
+    "readMins": 3,
+    "body": [
+      "You cannot gain two pounds of fat overnight. That would take roughly 7,000 surplus calories in a day. What you can do is hold two pounds of water, food, and glycogen, and that's almost always what the scale is showing.",
+      "Salt, carbs, hard training, poor sleep, and the normal rhythm of digestion all move the number by a pound or two in either direction. None of it is fat.",
+      "This is exactly why a weekly trend beats a daily reading. One weigh-in is noise. The slope across two weeks is signal. Weigh yourself often if you like, but only believe the line, not the dots."
+    ]
+  },
+  {
+    "id": "protein-leverage",
+    "eyebrow": "Strategy",
+    "title": "The protein-first plate",
+    "subtitle": "One habit that quietly fixes the rest.",
+    "readMins": 3,
+    "body": [
+      "If you only change one thing, change the order you build a meal. Decide the protein first, then fill in around it. Hunger, cravings, and total calories tend to fall into line on their own when protein leads.",
+      "There's a theory behind it called protein leverage: we keep eating until we hit a protein target, and modern food is engineered to be low in protein and easy to overeat. Hit the target sooner and the overeating has less room to happen.",
+      "In practice it looks boring and works anyway. Eggs at breakfast instead of just toast. Yogurt instead of just granola. A real protein at lunch instead of a carb-on-carb sandwich. Same effort, different outcome."
+    ]
+  },
+  {
+    "id": "consistency",
+    "eyebrow": "Mindset",
+    "title": "Consistency beats intensity",
+    "subtitle": "The unglamorous truth about results.",
+    "readMins": 3,
+    "body": [
+      "The person who logs imperfectly every day for a month learns more about themselves than the person who logs perfectly for three days and burns out. Adherence is the whole game.",
+      "A streak isn't about willpower, it's about lowering the cost of the next entry. The faster and easier logging is, the more likely you are to do it when you're tired, busy, or out. That's why speed matters more than precision.",
+      "Aim to log most days, not every day. Miss one, log the next. The trend is built from the days you showed up, and there will always be more of those than the days you didn't."
+    ]
+  }
+]

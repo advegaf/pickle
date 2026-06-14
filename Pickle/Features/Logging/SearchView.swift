@@ -46,6 +46,7 @@ struct SearchView: View {
     @StateObject private var vm = SearchViewModel()
     @FocusState private var focused: Bool
 
+    var initialQuery: String = ""
     let onSelect: (FoodCandidate) -> Void
     let onCreateCustom: (String) -> Void
 
@@ -54,7 +55,11 @@ struct SearchView: View {
             searchField
             content
         }
-        .onAppear { focused = true; refresh() }
+        .onAppear {
+            if !initialQuery.isEmpty && vm.query.isEmpty { vm.query = initialQuery }
+            focused = initialQuery.isEmpty
+            refresh()
+        }
     }
 
     private var searchField: some View {

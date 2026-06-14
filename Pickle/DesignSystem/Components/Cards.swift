@@ -158,6 +158,8 @@ struct PhotoCard: View {
                     }
                 }
                 .padding(Spacing.m)
+                // Clear the rotated eyebrow on the left edge.
+                .padding(.leading, eyebrow != nil ? Spacing.l : 0)
             }
             .frame(height: height)
             .frame(maxWidth: .infinity)

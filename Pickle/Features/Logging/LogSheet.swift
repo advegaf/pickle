@@ -5,6 +5,7 @@ import SwiftUI
 struct LogSheet: View {
     @Environment(\.dismiss) private var dismiss
     var presetMeal: MealSlot = .snack
+    var prefillQuery: String = ""
 
     @State private var mode: Mode = .search
     @State private var path: [Route] = []
@@ -79,6 +80,7 @@ struct LogSheet: View {
         switch mode {
         case .search:
             SearchView(
+                initialQuery: prefillQuery,
                 onSelect: { path.append(.detail($0)) },
                 onCreateCustom: { path.append(.custom($0)) }
             )
