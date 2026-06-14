@@ -18,7 +18,7 @@ struct MainTabView: View {
                 case 1: ExploreView()
                 case 2: CoachView()
                 case 3: ActivityView()
-                default: PlaceholderTab(title: "More")
+                default: MoreView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

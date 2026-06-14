@@ -163,8 +163,16 @@ final class PickleStore: ObservableObject {
         context.insert(entry)
         try? context.save()
         refreshWidgetSnapshot()
+        HealthKitService.shared.write(macros: macros, date: date)
         bump()
         return true
+    }
+
+    /// All diary days, newest first — used by export.
+    func allDiaryDays() -> [DiaryDay] {
+        let entries = (try? context.fetch(FetchDescriptor<LogEntry>(sortBy: [SortDescriptor(\.loggedAt)]))) ?? []
+        let grouped = Dictionary(grouping: entries.map(LoggedFood.init), by: \.localDay)
+        return grouped.keys.sorted(by: >).map { DiaryDay(localDay: $0, entries: grouped[$0] ?? []) }
     }
 
     func deleteLog(id: UUID) {
@@ -256,6 +264,15 @@ final class PickleStore: ObservableObject {
         let descriptor = FetchDescriptor<FoodItemEntry>(predicate: #Predicate { $0.canonicalID == canonicalID })
         if let food = try? context.fetch(descriptor).first {
             food.isFavorite.toggle()
+            try? context.save()
+            bump()
+        }
+    }
+
+    func deleteFood(canonicalID: String) {
+        let descriptor = FetchDescriptor<FoodItemEntry>(predicate: #Predicate { $0.canonicalID == canonicalID })
+        if let food = try? context.fetch(descriptor).first {
+            context.delete(food)
             try? context.save()
             bump()
         }
