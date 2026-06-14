@@ -19,6 +19,12 @@ enum LaunchOptions {
         return args[i + 1]
     }
 
+    /// `--tab N` selects a tab on launch (0=Home … 4=More).
+    static var tab: Int? {
+        guard let i = args.firstIndex(of: "--tab"), i + 1 < args.count else { return nil }
+        return Int(args[i + 1])
+    }
+
     private static var args: [String] { ProcessInfo.processInfo.arguments }
 }
 

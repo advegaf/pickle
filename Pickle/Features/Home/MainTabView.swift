@@ -17,7 +17,7 @@ struct MainTabView: View {
                                  onLogMeal: { logRequest = LogRequest(meal: $0) })
                 case 1: PlaceholderTab(title: "Explore")
                 case 2: PlaceholderTab(title: "Coach")
-                case 3: PlaceholderTab(title: "Activity")
+                case 3: ActivityView()
                 default: PlaceholderTab(title: "More")
                 }
             }
@@ -31,6 +31,7 @@ struct MainTabView: View {
         }
         .task {
             #if DEBUG
+            if let t = LaunchOptions.tab { selection = t }
             if ["log", "ai", "quick", "detail"].contains(LaunchOptions.open) {
                 logRequest = LogRequest(meal: .lunch)
             }
