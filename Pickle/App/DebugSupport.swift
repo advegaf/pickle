@@ -44,6 +44,15 @@ enum DemoSeed {
         try? ctx.save()
     }
 
+    /// Onboarding complete but nothing logged — the first-run empty Home state.
+    static func seedEmpty(_ store: PickleStore) {
+        reset(store)
+        var p = ProfileData()
+        p.name = "Alex"; p.sex = .male; p.age = 28; p.heightCm = 180; p.weightKg = 82
+        p.activity = .active; p.goal = .lose; p.weeklyRateKg = 0.5; p.split = .highProtein
+        store.completeOnboarding(p)
+    }
+
     /// A completed profile, a few days of history (for streak/activity/coach), and a couple
     /// of meals logged today.
     static func seed(_ store: PickleStore) {

@@ -32,6 +32,7 @@ struct RootView: View {
         #if DEBUG
         if LaunchOptions.reset { DemoSeed.reset(store) }
         if LaunchOptions.seedDemo { DemoSeed.seed(store) }
+        if ProcessInfo.processInfo.arguments.contains("--seed-empty") { DemoSeed.seedEmpty(store) }
         #endif
     }
 }
