@@ -11,7 +11,7 @@ enum FoodSource: String, Codable, Sendable {
 
 /// Nutrition normalized to per-100g, plus an optional known serving size in grams.
 /// Every source (OFF, USDA, custom, common) maps into this single shape.
-struct FoodNutrition: Equatable, Sendable, Codable {
+struct FoodNutrition: Equatable, Sendable, Codable, Hashable {
     var kcalPer100: Double
     var proteinPer100: Double
     var carbsPer100: Double
@@ -41,7 +41,7 @@ struct FoodNutrition: Equatable, Sendable, Codable {
 
 /// A search result before it becomes a logged entry. Identified by source+id; deduped by
 /// `canonicalID` (barcode when present).
-struct FoodCandidate: Identifiable, Equatable, Sendable {
+struct FoodCandidate: Identifiable, Equatable, Sendable, Hashable {
     var name: String
     var brand: String?
     var source: FoodSource

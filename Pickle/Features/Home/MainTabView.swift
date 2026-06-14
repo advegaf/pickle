@@ -5,7 +5,7 @@ import SwiftUI
 struct MainTabView: View {
     @EnvironmentObject private var store: PickleStore
     @State private var selection = 0
-    @State private var showLog = false
+    @State private var logRequest: LogRequest?
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -13,7 +13,8 @@ struct MainTabView: View {
 
             Group {
                 switch selection {
-                case 0: HomeView(onLog: { showLog = true })
+                case 0: HomeView(onLog: { logRequest = LogRequest(meal: .snack) },
+                                 onLogMeal: { logRequest = LogRequest(meal: $0) })
                 case 1: PlaceholderTab(title: "Explore")
                 case 2: PlaceholderTab(title: "Coach")
                 case 3: PlaceholderTab(title: "Activity")
@@ -24,11 +25,24 @@ struct MainTabView: View {
 
             PickleTabBar(items: PickleTabItem.pickleTabs, selection: $selection)
         }
-        .sheet(isPresented: $showLog) {
-            // Real Log sheet arrives in Phase 7.
-            LogPlaceholderSheet()
+        .sheet(item: $logRequest) { request in
+            LogSheet(presetMeal: request.meal)
+                .environmentObject(store)
+        }
+        .task {
+            #if DEBUG
+            if ["log", "ai", "quick", "detail"].contains(LaunchOptions.open) {
+                logRequest = LogRequest(meal: .lunch)
+            }
+            #endif
         }
     }
+}
+
+/// Identifies a Log-sheet presentation, carrying which meal to preselect.
+struct LogRequest: Identifiable {
+    let meal: MealSlot
+    var id: String { meal.rawValue }
 }
 
 /// Temporary tab body used until each feature phase lands.
@@ -50,20 +64,3 @@ struct PlaceholderTab: View {
     }
 }
 
-struct LogPlaceholderSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    var body: some View {
-        ZStack {
-            Palette.background.ignoresSafeArea()
-            VStack(spacing: Spacing.l) {
-                Text("Log").font(PickleFont.display(28)).foregroundStyle(Palette.primary)
-                Text("Logging flows land in Phase 7.")
-                    .font(PickleFont.body()).foregroundStyle(Palette.secondary)
-                SecondaryButton(title: "Close") { dismiss() }.frame(width: 160)
-            }
-            .padding(Spacing.screen)
-        }
-        .presentationDetents([.large])
-        .presentationBackground(Palette.background)
-    }
-}

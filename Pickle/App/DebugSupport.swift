@@ -13,6 +13,12 @@ enum LaunchOptions {
         return Int(args[i + 1])
     }
 
+    /// `--open log` / `--open ai` / `--open quick` auto-presents a screen for screenshots.
+    static var open: String? {
+        guard let i = args.firstIndex(of: "--open"), i + 1 < args.count else { return nil }
+        return args[i + 1]
+    }
+
     private static var args: [String] { ProcessInfo.processInfo.arguments }
 }
 
