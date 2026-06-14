@@ -29,6 +29,13 @@ struct MainTabView: View {
             LogSheet(presetMeal: request.meal)
                 .environmentObject(store)
         }
+        .onOpenURL { url in
+            // Widget deep link: pickle://log opens the Log sheet.
+            if url.scheme == "pickle" && url.host == "log" {
+                selection = 0
+                logRequest = LogRequest(meal: .snack)
+            }
+        }
         .task {
             #if DEBUG
             if let t = LaunchOptions.tab { selection = t }
