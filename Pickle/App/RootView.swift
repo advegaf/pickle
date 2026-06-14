@@ -1,13 +1,10 @@
 import SwiftUI
 
-/// Temporary root for Phase 1 — boots to the PICKLE wordmark on pure black.
-/// Replaced by the onboarding gate + tab shell in later phases.
+/// Temporary root — during Phase 2 it shows the design-system gallery for the visual
+/// verification loop. Replaced by the onboarding gate + tab shell in Phase 5.
 struct RootView: View {
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            Wordmark()
-        }
+        DesignSystemGallery()
     }
 }
 
