@@ -2,7 +2,7 @@ import Foundation
 
 /// `localDay` is a `yyyy-MM-dd` string captured in the device's timezone at log time, and
 /// stored on every entry. All "today"/calendar/streak logic runs on these strings via
-/// integer day-ordinals computed in UTC — so it never breaks across DST or travel.
+/// integer day-ordinals computed in UTC, so it never breaks across DST or travel.
 enum DayKey {
     private static let formatter: DateFormatter = {
         let f = DateFormatter()

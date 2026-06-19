@@ -1,7 +1,7 @@
 import Foundation
 
 /// Pure nutrition math. Mifflin-St Jeor BMR → TDEE → goal-adjusted calorie target →
-/// macro grams. No state, no I/O — fully unit-tested.
+/// macro grams. No state, no I/O, fully unit-tested.
 enum PlanCalculator {
 
     /// One kilogram of body mass ≈ 7700 kcal of energy.
@@ -16,6 +16,16 @@ enum PlanCalculator {
         var heightCm: Double
         var weightKg: Double
         var activity: ActivityLevel
+        /// Lean body mass in kg from Apple Health, when known. Enables the more accurate
+        /// Katch-McArdle basal rate.
+        var leanMassKg: Double? = nil
+    }
+
+    /// Which basal-rate formula a plan used, surfaced for transparency.
+    enum BasalFormula: String, Sendable { case katchMcArdle, mifflinStJeor }
+
+    static func basalFormula(_ p: Profile) -> BasalFormula {
+        (p.leanMassKg ?? 0) > 0 ? .katchMcArdle : .mifflinStJeor
     }
 
     struct Goal: Equatable, Sendable {
@@ -25,8 +35,12 @@ enum PlanCalculator {
         var split: MacroSplit
     }
 
-    /// Basal metabolic rate (kcal/day).
+    /// Basal metabolic rate (kcal/day). Uses Katch-McArdle when lean body mass is known
+    /// (it accounts for muscle mass, so it is more accurate), else Mifflin-St Jeor.
     static func bmr(_ p: Profile) -> Double {
+        if let lean = p.leanMassKg, lean > 0 {
+            return 370 + 21.6 * lean
+        }
         let base = 10 * p.weightKg + 6.25 * p.heightCm - 5 * Double(p.age)
         return base + (p.sex == .male ? 5 : -161)
     }

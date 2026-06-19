@@ -13,7 +13,7 @@ struct FoodDetailView: View {
     @State private var meal: MealSlot
     @State private var isFavorite = false
 
-    init(candidate: FoodCandidate, presetMeal: MealSlot = .snack, onAdded: @escaping () -> Void) {
+    init(candidate: FoodCandidate, presetMeal: MealSlot = .current, onAdded: @escaping () -> Void) {
         self.candidate = candidate
         self.presetMeal = presetMeal
         self.onAdded = onAdded
@@ -62,8 +62,12 @@ struct FoodDetailView: View {
                     store.toggleFavorite(canonicalID: candidate.canonicalID)
                     Haptics.select()
                 } label: {
+                    // Fills (solid) when saved, outlines when not, so the saved state is
+                    // unmistakable. SF Symbols here because the free Hugeicons pack has no solid heart.
                     Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundStyle(Palette.primary)
+                        .font(.system(size: 20))
+                        .foregroundStyle(isFavorite ? Palette.primary : Palette.tertiary)
+                        .contentTransition(.symbolEffect(.replace))
                 }
             }
         }
@@ -92,7 +96,7 @@ struct FoodDetailView: View {
                     .foregroundStyle(Palette.primary)
                     .monospacedDigit()
                     .contentTransition(.numericText(value: Double(macros.kcal)))
-                Text("kcal")
+                Text("cal")
                     .font(PickleFont.body())
                     .foregroundStyle(Palette.tertiary)
             }
@@ -114,13 +118,13 @@ struct FoodDetailView: View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             Eyebrow(text: "Portion")
             HStack(spacing: Spacing.m) {
-                stepButton("minus") { adjust(-1) }
+                stepButton(.minus) { adjust(-1) }
                 Text(amountLabel)
                     .font(PickleFont.stat(26))
                     .foregroundStyle(Palette.primary)
                     .monospacedDigit()
                     .frame(maxWidth: .infinity)
-                stepButton("plus") { adjust(1) }
+                stepButton(.add) { adjust(1) }
             }
             Menu {
                 ForEach(availableUnits) { u in
@@ -131,8 +135,7 @@ struct FoodDetailView: View {
                     Text(unitLabel)
                         .font(PickleFont.bodyMedium(15))
                         .foregroundStyle(Palette.primary)
-                    Image(systemName: "chevron.up.chevron.down")
-                        .font(.system(size: 11, weight: .medium))
+                    PickleIcon(.sort, size: 11)
                         .foregroundStyle(Palette.tertiary)
                     Spacer()
                     Text("\(Int(grams.rounded())) g")
@@ -180,10 +183,9 @@ struct FoodDetailView: View {
         }
     }
 
-    private func stepButton(_ symbol: String, _ action: @escaping () -> Void) -> some View {
+    private func stepButton(_ glyph: Glyph, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 16, weight: .medium))
+            PickleIcon(glyph, size: 16)
                 .foregroundStyle(Palette.primary)
                 .frame(width: 48, height: 48)
                 .background(Palette.surface)

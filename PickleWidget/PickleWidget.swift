@@ -8,6 +8,7 @@ private enum W {
     static let secondary = Color(.sRGB, white: 0.64, opacity: 1)   // ~#A3A3A3
     static let tertiary = Color(.sRGB, white: 0.54, opacity: 1)    // ~#8A8A8A
     static let faint = Color(.sRGB, white: 0.36, opacity: 1)
+    static let over = Color(.sRGB, red: 0.898, green: 0.282, blue: 0.302, opacity: 1)   // #E5484D
     static let protein = Color(.sRGB, red: 0.91, green: 0.89, blue: 0.83, opacity: 1)
     static let carbs = Color(.sRGB, red: 0.79, green: 0.76, blue: 0.69, opacity: 1)
     static let fat = Color(.sRGB, red: 0.69, green: 0.66, blue: 0.56, opacity: 1)
@@ -60,7 +61,7 @@ struct KcalRingMini: View {
             Circle().stroke(W.faint.opacity(0.4), lineWidth: lineWidth)
             Circle()
                 .trim(from: 0, to: min(max(fraction, 0), 1))
-                .stroke(over ? W.tertiary : W.primary,
+                .stroke(over ? W.over : W.primary,
                         style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 .rotationEffect(.degrees(-90))
         }
@@ -104,11 +105,13 @@ struct PickleWidgetEntryView: View {
 
     private var circular: some View {
         ZStack {
-            KcalRingMini(fraction: snap.fraction, lineWidth: 5, over: snap.consumedKcal > snap.targetKcal)
+            KcalRingMini(fraction: snap.fraction, lineWidth: 5, over: snap.isOver)
             VStack(spacing: 0) {
-                Text("\(snap.remainingKcal)")
+                Text("\(snap.isOver ? snap.overKcal : snap.remainingKcal)")
                     .font(.system(size: 17, weight: .bold)).monospacedDigit()
-                Text("left").font(.system(size: 8, weight: .medium)).foregroundStyle(.secondary)
+                    .foregroundStyle(snap.isOver ? W.over : W.primary)
+                Text(snap.isOver ? "over" : "left").font(.system(size: 8, weight: .medium))
+                    .foregroundStyle(snap.isOver ? W.over : .secondary)
             }
         }
         .containerBackground(.clear, for: .widget)
@@ -117,11 +120,11 @@ struct PickleWidgetEntryView: View {
     private var homeWidget: some View {
         HStack(spacing: 14) {
             ZStack {
-                KcalRingMini(fraction: snap.fraction, lineWidth: 8, over: snap.consumedKcal > snap.targetKcal)
+                KcalRingMini(fraction: snap.fraction, lineWidth: 8, over: snap.isOver)
                 VStack(spacing: 0) {
-                    Text("\(snap.remainingKcal)")
-                        .font(.system(size: 22, weight: .bold)).foregroundStyle(W.primary).monospacedDigit()
-                    Text("LEFT").font(.system(size: 8, weight: .medium)).tracking(1).foregroundStyle(W.tertiary)
+                    Text("\(snap.isOver ? snap.overKcal : snap.remainingKcal)")
+                        .font(.system(size: 22, weight: .bold)).foregroundStyle(snap.isOver ? W.over : W.primary).monospacedDigit()
+                    Text(snap.isOver ? "OVER" : "LEFT").font(.system(size: 8, weight: .medium)).tracking(1).foregroundStyle(snap.isOver ? W.over : W.tertiary)
                 }
             }
             .frame(width: 92, height: 92)
@@ -132,7 +135,7 @@ struct PickleWidgetEntryView: View {
                     MacroBarMini(short: "P", value: snap.proteinG, target: snap.proteinTarget, tint: W.protein)
                     MacroBarMini(short: "C", value: snap.carbsG, target: snap.carbsTarget, tint: W.carbs)
                     MacroBarMini(short: "F", value: snap.fatG, target: snap.fatTarget, tint: W.fat)
-                    Text("\(snap.consumedKcal) / \(snap.targetKcal) kcal")
+                    Text("\(snap.consumedKcal) / \(snap.targetKcal) cal")
                         .font(.system(size: 11)).foregroundStyle(W.secondary).monospacedDigit()
                 }
             }

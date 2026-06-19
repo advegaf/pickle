@@ -47,6 +47,21 @@ final class PlanCalculatorTests: XCTestCase {
         XCTAssertTrue(MacroSplit.lowCarb.isValid)
     }
 
+    func testBMR_usesKatchMcArdleWhenLeanMassPresent() {
+        // Katch-McArdle: 370 + 21.6 * leanKg. 60 kg lean = 370 + 1296 = 1666.
+        let p = PlanCalculator.Profile(sex: .male, age: 30, heightCm: 180, weightKg: 80,
+                                       activity: .moderate, leanMassKg: 60)
+        XCTAssertEqual(PlanCalculator.bmr(p), 1666, accuracy: 0.01)
+        XCTAssertEqual(PlanCalculator.basalFormula(p), .katchMcArdle)
+    }
+
+    func testBMR_fallsBackToMifflinWithoutLeanMass() {
+        let p = PlanCalculator.Profile(sex: .male, age: 30, heightCm: 180, weightKg: 80,
+                                       activity: .moderate, leanMassKg: nil)
+        XCTAssertEqual(PlanCalculator.bmr(p), 1780, accuracy: 0.01)
+        XCTAssertEqual(PlanCalculator.basalFormula(p), .mifflinStJeor)
+    }
+
     func testFullPlan_isConsistent() {
         let p = PlanCalculator.Profile(sex: .male, age: 28, heightCm: 178, weightKg: 82, activity: .active)
         let goal = PlanCalculator.Goal(direction: .lose, weeklyRateKg: 0.5, split: .highProtein)

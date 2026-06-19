@@ -4,7 +4,7 @@ import SwiftUI
 /// readable at ~32pt. `isToday` is orthogonal (adds the ring) so "today + logged" still reads.
 struct CalendarDayCircle: View {
     enum DayState {
-        case future    // upcoming — faintest
+        case future    // upcoming, faintest
         case empty     // past, nothing logged
         case logged    // logged, missed the goal
         case goalHit   // logged and hit the goal
@@ -19,8 +19,7 @@ struct CalendarDayCircle: View {
         ZStack {
             background
             if state == .goalHit {
-                Image(systemName: "checkmark")
-                    .font(.system(size: size * 0.32, weight: .bold))
+                PickleIcon(.check, size: size * 0.44)
                     .foregroundStyle(Palette.background)
             } else {
                 Text("\(day)")

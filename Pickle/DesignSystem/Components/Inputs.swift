@@ -68,7 +68,7 @@ struct UtilityStepper: View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             Eyebrow(text: label)
             HStack(spacing: Spacing.m) {
-                stepButton("minus") { set(value - step) }
+                stepButton(.minus) { set(value - step) }
 
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     TextField("0", text: $draft)
@@ -94,7 +94,7 @@ struct UtilityStepper: View {
                 }
                 .frame(maxWidth: .infinity)
 
-                stepButton("plus") { set(value + step) }
+                stepButton(.add) { set(value + step) }
             }
         }
         .onAppear { draft = value == 0 ? "" : String(value) }
@@ -119,10 +119,9 @@ struct UtilityStepper: View {
         Haptics.select()
     }
 
-    private func stepButton(_ symbol: String, _ action: @escaping () -> Void) -> some View {
+    private func stepButton(_ glyph: Glyph, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 16, weight: .medium))
+            PickleIcon(glyph, size: 16)
                 .foregroundStyle(Palette.primary)
                 .frame(width: 44, height: 44)
                 .background(Palette.surface)
@@ -140,8 +139,7 @@ struct ValidationRow: View {
 
     var body: some View {
         HStack(spacing: Spacing.s) {
-            Image(systemName: satisfied ? "checkmark" : "xmark")
-                .font(.system(size: 11, weight: .semibold))
+            PickleIcon(satisfied ? .check : .close, size: 11)
                 .foregroundStyle(satisfied ? Palette.success : Palette.tertiary)
                 .frame(width: 14)
             Text(text)
@@ -166,7 +164,7 @@ private struct StatefulPreview: View {
             Palette.background.ignoresSafeArea()
             VStack(spacing: Spacing.xxl) {
                 UnderlineField(label: "First name", text: $name)
-                UtilityStepper(label: "Calories", value: $kcal, step: 10, unit: "kcal")
+                UtilityStepper(label: "Calories", value: $kcal, step: 10, unit: "cal")
                 VStack(alignment: .leading, spacing: Spacing.s) {
                     ValidationRow(text: "One number", satisfied: true)
                     ValidationRow(text: "8 characters minimum", satisfied: false)

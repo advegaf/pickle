@@ -64,8 +64,7 @@ struct SearchView: View {
 
     private var searchField: some View {
         HStack(spacing: Spacing.s) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 16, weight: .regular))
+            PickleIcon(.search, size: 16)
                 .foregroundStyle(Palette.tertiary)
             TextField("Search foods", text: $vm.query)
                 .font(PickleFont.body(17))
@@ -77,7 +76,7 @@ struct SearchView: View {
                 .onChange(of: vm.query) { _, _ in refresh() }
             if !vm.query.isEmpty {
                 Button { vm.query = ""; refresh() } label: {
-                    Image(systemName: "xmark.circle.fill")
+                    PickleIcon(.closeCircle, size: 18)
                         .foregroundStyle(Palette.tertiary)
                 }
             }
@@ -193,8 +192,7 @@ struct FoodRow: View {
                         .lineLimit(1)
                 }
                 Spacer()
-                Image(systemName: "plus")
-                    .font(.system(size: 15, weight: .medium))
+                PickleIcon(.add, size: 15)
                     .foregroundStyle(Palette.primary)
                     .frame(width: 32, height: 32)
             }

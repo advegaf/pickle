@@ -49,8 +49,7 @@ struct SavedFoodsList: View {
                                     Haptics.select()
                                     refreshToken += 1
                                 } label: {
-                                    Image(systemName: kind == .favorites ? "heart.slash" : "trash")
-                                        .font(.system(size: 14, weight: .regular))
+                                    PickleIcon(kind == .favorites ? .favorite : .delete, size: 16)
                                         .foregroundStyle(Palette.tertiary)
                                         .frame(width: 40, height: 40)
                                 }
@@ -79,7 +78,7 @@ struct ExportView: View {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 Text("Export your data")
                     .font(PickleFont.display(28)).foregroundStyle(Palette.primary)
-                Text("Download everything you've logged. This file contains your full nutrition and weight history — keep it somewhere private.")
+                Text("Download everything you've logged. This file contains your full nutrition and weight history, keep it somewhere private.")
                     .font(PickleFont.body(15)).foregroundStyle(Palette.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -111,7 +110,7 @@ struct ExportView: View {
                 Text(detail).font(PickleFont.caption()).foregroundStyle(Palette.tertiary)
             }
             Spacer()
-            Image(systemName: "square.and.arrow.up").foregroundStyle(Palette.primary)
+            PickleIcon(.share, size: 20).foregroundStyle(Palette.primary)
         }
         .padding(Spacing.l)
         .frame(maxWidth: .infinity)

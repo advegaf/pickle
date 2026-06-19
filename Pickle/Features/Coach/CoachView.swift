@@ -6,6 +6,14 @@ struct CoachView: View {
     @EnvironmentObject private var store: PickleStore
     @State private var showRecalc = false
 
+    @State private var coachAdvice: String?
+    @State private var coachLoading = false
+    @State private var coachFailed = false
+    @State private var coachReady = false
+
+    private static let adviceKey = "coachAdviceText"
+    private static let cacheKeyKey = "coachAdviceCacheKey"
+
     private var profile: ProfileData { store.profile() }
     private var adaptive: AdaptivePlanEngine.Result { store.adaptiveRecommendation() }
 
@@ -14,6 +22,7 @@ struct CoachView: View {
             VStack(alignment: .leading, spacing: Spacing.xxl) {
                 hero
                 VStack(alignment: .leading, spacing: Spacing.xxl) {
+                    coachCard
                     adaptiveCard
                     yourPlan
                     insights
@@ -26,14 +35,85 @@ struct CoachView: View {
         }
         .background(Palette.background)
         .ignoresSafeArea(edges: .top)
+        .task { await loadCoach() }
         .sheet(isPresented: $showRecalc) {
             RecalculateSheet().environmentObject(store)
         }
     }
 
+    // MARK: AI coach
+
+    private var coachCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Eyebrow(text: "Your coach")
+            Group {
+                if let advice = coachAdvice {
+                    Text(advice)
+                        .font(PickleFont.body(16))
+                        .foregroundStyle(Palette.secondary)
+                        .lineSpacing(4)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else if coachLoading {
+                    HStack(spacing: Spacing.m) {
+                        DotLoader(size: 26, dot: 6)
+                        Text("Reading your week\u{2026}")
+                            .font(PickleFont.body(15))
+                            .foregroundStyle(Palette.tertiary)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                } else if coachFailed {
+                    Text("Your coach is offline right now. Check back later and it will pick up where your week left off.")
+                        .font(PickleFont.body(15))
+                        .foregroundStyle(Palette.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text("Log a few days and your coach reads the patterns in what you eat, then tells you the one thing to focus on next.")
+                        .font(PickleFont.body(15))
+                        .foregroundStyle(Palette.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Spacing.l)
+            .background(Palette.surface)
+            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+        }
+        .animation(Motion.easeOut, value: coachAdvice)
+        .animation(Motion.easeOut, value: coachLoading)
+    }
+
+    /// Generate (or reuse cached) advice once when Coach first appears. Cached in UserDefaults
+    /// keyed by the data signature, so it regenerates at most daily and when the numbers move.
+    @MainActor
+    private func loadCoach() async {
+        guard coachAdvice == nil, !coachLoading else { return }
+        let summary = store.coachingSummary()
+        guard summary.loggedDays >= 3 else { coachReady = false; return }
+        coachReady = true
+
+        let defaults = UserDefaults.standard
+        if let cached = defaults.string(forKey: Self.adviceKey), !cached.isEmpty,
+           defaults.string(forKey: Self.cacheKeyKey) == summary.cacheKey {
+            coachAdvice = cached
+            return
+        }
+
+        coachLoading = true
+        coachFailed = false
+        do {
+            let advice = try await AICoachingFactory.make().advise(summary.text)
+            coachAdvice = advice
+            defaults.set(advice, forKey: Self.adviceKey)
+            defaults.set(summary.cacheKey, forKey: Self.cacheKeyKey)
+        } catch {
+            coachFailed = true
+        }
+        coachLoading = false
+    }
+
     private var hero: some View {
         ZStack(alignment: .bottomLeading) {
-            DuotonePlaceholder(seed: 9)
+            TreatedImage(asset: "coach-hero", seed: 9)
             LinearGradient(colors: [.clear, .black.opacity(0.9)], startPoint: .center, endPoint: .bottom)
             VStack(alignment: .leading, spacing: Spacing.s) {
                 Eyebrow(text: "Coach", color: Palette.secondary)
@@ -52,47 +132,51 @@ struct CoachView: View {
     // MARK: Adaptive
 
     private var adaptiveCard: some View {
-        VStack(alignment: .leading, spacing: Spacing.l) {
+        VStack(alignment: .leading, spacing: Spacing.m) {
             Eyebrow(text: "Weekly recalibration")
 
-            if adaptive.changed, let maintenance = adaptive.estimatedMaintenanceKcal {
-                VStack(alignment: .leading, spacing: Spacing.m) {
-                    HStack(alignment: .firstTextBaseline, spacing: Spacing.l) {
-                        targetColumn("Now", profile.targets.kcal, dim: true)
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Palette.tertiary)
-                        targetColumn("Next week", adaptive.newKcal, dim: false)
+            VStack(alignment: .leading, spacing: Spacing.l) {
+                if adaptive.changed, let maintenance = adaptive.estimatedMaintenanceKcal {
+                    VStack(alignment: .leading, spacing: Spacing.m) {
+                        HStack(alignment: .center, spacing: Spacing.s) {
+                            targetColumn("Now", profile.targets.kcal, dim: true)
+                            PickleIcon(.arrowRight, size: 14)
+                                .foregroundStyle(Palette.tertiary)
+                            targetColumn("Next week", adaptive.newKcal, dim: false)
+                        }
+                        Text("Your logged intake and weight trend put your true maintenance near \(maintenance) cal. \(adaptive.reason)")
+                            .font(PickleFont.body(14))
+                            .foregroundStyle(Palette.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        PrimaryButton(title: "Apply new target") {
+                            store.applyAdaptive(adaptive); Haptics.celebrate()
+                        }
                     }
-                    Text("Your logged intake and weight trend put your true maintenance near \(maintenance) kcal. \(adaptive.reason)")
-                        .font(PickleFont.body(14))
+                } else {
+                    Text(adaptive.reason)
+                        .font(PickleFont.body(15))
                         .foregroundStyle(Palette.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-                    PrimaryButton(title: "Apply new target") {
-                        store.applyAdaptive(adaptive); Haptics.celebrate()
-                    }
                 }
-            } else {
-                Text(adaptive.reason)
-                    .font(PickleFont.body(15))
-                    .foregroundStyle(Palette.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Spacing.l)
+            .background(Palette.surface)
+            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
         }
-        .padding(Spacing.l)
-        .background(Palette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
     }
 
     private func targetColumn(_ label: String, _ kcal: Int, dim: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(spacing: 4) {
             Text(label).font(PickleFont.eyebrow(10)).tracking(1.5)
                 .foregroundStyle(Palette.tertiary).textCase(.uppercase)
             Text("\(kcal)")
                 .font(PickleFont.stat(30))
                 .foregroundStyle(dim ? Palette.tertiary : Palette.primary)
                 .monospacedDigit()
+                .contentTransition(.numericText(value: Double(kcal)))
         }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: Plan transparency
@@ -105,16 +189,23 @@ struct CoachView: View {
         return VStack(alignment: .leading, spacing: Spacing.m) {
             Eyebrow(text: "Your plan, transparent")
             VStack(spacing: 0) {
-                mathRow("Base metabolism (BMR)", "\(bmr) kcal")
-                mathRow("× \(profile.activity.title.lowercased())", "\(tdee) kcal")
+                mathRow("Base metabolism (BMR)", "\(bmr) cal")
+                mathRow("× \(profile.activity.title.lowercased())", "\(tdee) cal")
                 mathRow(adj == 0 ? "Maintain" : (adj < 0 ? "Goal deficit" : "Goal surplus"),
-                        adj == 0 ? "—" : "\(adj > 0 ? "+" : "")\(adj) kcal")
+                        adj == 0 ? "-" : "\(adj > 0 ? "+" : "")\(adj) cal")
                 Divider().overlay(Palette.hairline)
-                mathRow("Daily target", "\(profile.targets.kcal) kcal", emphasis: true)
+                mathRow("Daily target", "\(profile.targets.kcal) cal", emphasis: true)
             }
             .padding(Spacing.l)
             .background(Palette.surface)
             .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+
+            Text(PlanCalculator.basalFormula(p) == .katchMcArdle
+                 ? "Calculated with the Katch-McArdle formula from your Apple Health lean body mass, the most accurate basal rate."
+                 : "Calculated with Mifflin-St Jeor. Connect Apple Health for a lean-mass-based estimate.")
+                .font(PickleFont.caption(12))
+                .foregroundStyle(Palette.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: Spacing.m) {
                 macroChip("Protein", profile.targets.proteinG)
@@ -158,7 +249,7 @@ struct CoachView: View {
         return VStack(alignment: .leading, spacing: Spacing.m) {
             Eyebrow(text: "This week")
             HStack {
-                StatBlock(number: input.avgDailyIntakeKcal > 0 ? "\(Int(input.avgDailyIntakeKcal))" : "—",
+                StatBlock(number: input.avgDailyIntakeKcal > 0 ? "\(Int(input.avgDailyIntakeKcal))" : "-",
                           label: "Avg intake")
                 StatBlock(number: "\(input.loggedDays)", label: "Days logged")
                 StatBlock(number: trend, label: "Weight trend")
@@ -167,7 +258,7 @@ struct CoachView: View {
     }
 
     private func weightTrend(_ samples: [WeightSample]) -> String {
-        guard let first = samples.first, let last = samples.last, samples.count >= 2 else { return "—" }
+        guard let first = samples.first, let last = samples.last, samples.count >= 2 else { return "-" }
         let deltaKg = last.kg - first.kg
         let deltaLb = deltaKg * 2.2046226
         if abs(deltaLb) < 0.3 { return "flat" }
@@ -179,22 +270,38 @@ struct CoachView: View {
     }
 }
 
-/// Page-dotted carousel of nutrition principles.
+/// Page-dotted carousel of nutrition principles. Each visit shows a rotating window of the
+/// full set, advancing from a persisted offset, so the leading quote is always fresh and the
+/// whole library cycles before anything repeats.
 struct QuoteCarousel: View {
-    private let quotes = [
+    private static let library = [
         "Protein first. Build the rest of the plate around it.",
         "A close estimate logged beats a perfect one skipped.",
         "Believe the weekly trend, not the daily weigh-in.",
         "Sustainable beats aggressive. Every single time.",
         "The streak isn't willpower. It's lowering the cost of the next log.",
+        "Fiber is free volume. It fills you up for almost nothing.",
+        "You can't out-train a diet you haven't measured.",
+        "Hunger is data, not failure. Read it, then adjust.",
+        "The best diet is the one you'll still be doing in a year.",
+        "Hit protein and fiber, and the rest tends to sort itself out.",
+        "Liquid calories are the easiest ones to forget. Log them first.",
+        "Progress hides in the average, not the outlier.",
+        "Plan the meal you'll actually eat, not the one you wish you would.",
+        "One high day doesn't undo a good week. Keep going.",
+        "Consistency compounds. Motivation doesn't.",
     ]
+    private let window = 5
+
+    @AppStorage("coachQuoteOffset") private var offset = 0
     @State private var index = 0
+    @State private var shown: [String] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             Eyebrow(text: "Principles")
             TabView(selection: $index) {
-                ForEach(Array(quotes.enumerated()), id: \.offset) { i, q in
+                ForEach(Array(shown.enumerated()), id: \.offset) { i, q in
                     Text("\u{201C}\(q)\u{201D}")
                         .font(PickleFont.display(22))
                         .foregroundStyle(Palette.primary)
@@ -208,12 +315,20 @@ struct QuoteCarousel: View {
             .frame(height: 120)
 
             HStack(spacing: 6) {
-                ForEach(quotes.indices, id: \.self) { i in
+                ForEach(shown.indices, id: \.self) { i in
                     Circle()
                         .fill(i == index ? Palette.primary : Palette.faint.opacity(0.5))
                         .frame(width: 6, height: 6)
                 }
             }
+        }
+        .onAppear {
+            guard shown.isEmpty else { return }
+            let lib = Self.library
+            let start = ((offset % lib.count) + lib.count) % lib.count
+            shown = (0..<window).map { lib[(start + $0) % lib.count] }
+            index = 0
+            offset = (start + window) % lib.count   // next Coach visit continues from here
         }
     }
 }

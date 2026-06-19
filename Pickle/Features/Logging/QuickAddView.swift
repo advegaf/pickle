@@ -12,7 +12,7 @@ struct QuickAddView: View {
     @State private var fat = 0
     @State private var meal: MealSlot
 
-    init(presetMeal: MealSlot = .snack, onAdded: @escaping () -> Void) {
+    init(presetMeal: MealSlot = .current, onAdded: @escaping () -> Void) {
         self.presetMeal = presetMeal
         self.onAdded = onAdded
         _meal = State(initialValue: presetMeal)
@@ -25,18 +25,14 @@ struct QuickAddView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.xl) {
-                UtilityStepper(label: "Calories", value: $kcal, step: 10, range: 0...5000, unit: "kcal")
-                HStack(spacing: Spacing.l) {
-                    UtilityStepper(label: "Protein", value: $protein, step: 1, range: 0...500, unit: "g")
-                    UtilityStepper(label: "Carbs", value: $carbs, step: 1, range: 0...500, unit: "g")
-                }
-                HStack(spacing: Spacing.l) {
-                    UtilityStepper(label: "Fat", value: $fat, step: 1, range: 0...300, unit: "g")
-                    Color.clear.frame(maxWidth: .infinity)
-                }
+                // Full-width steppers (one per row) so the big number + its unit never clip.
+                UtilityStepper(label: "Calories", value: $kcal, step: 10, range: 0...5000, unit: "cal")
+                UtilityStepper(label: "Protein", value: $protein, step: 1, range: 0...500, unit: "g")
+                UtilityStepper(label: "Carbs", value: $carbs, step: 1, range: 0...500, unit: "g")
+                UtilityStepper(label: "Fat", value: $fat, step: 1, range: 0...300, unit: "g")
 
                 if impliedKcal > 0 && abs(impliedKcal - kcal) > 30 {
-                    Text("Macros imply ~\(impliedKcal) kcal. Tap to use.")
+                    Text("Macros imply ~\(impliedKcal) cal. Tap to use.")
                         .font(PickleFont.caption())
                         .foregroundStyle(Palette.tertiary)
                         .onTapGesture { kcal = impliedKcal; Haptics.select() }

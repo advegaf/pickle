@@ -1,6 +1,6 @@
 import Foundation
 
-/// Weekly adaptive recalibration — the "poor man's MacroFactor". Estimates the user's
+/// Weekly adaptive recalibration, the "poor man's MacroFactor". Estimates the user's
 /// true maintenance from the energy balance equation (what they actually ate vs how their
 /// weight trended), then re-aims the target at their goal. Pure and fully unit-tested.
 ///
@@ -44,8 +44,8 @@ enum AdaptivePlanEngine {
         var reason: String {
             switch status {
             case .adjusted: return "Adjusted from your logged intake and weight trend."
-            case .held: return "Your target is holding steady — your intake matches your trend."
-            case .notEnoughLogs: return "Keep logging — adaptive targets need a fuller week of data."
+            case .held: return "Your target is holding steady, your intake matches your trend."
+            case .notEnoughLogs: return "Keep logging, adaptive targets need a fuller week of data."
             case .noWeightTrend: return "Add a recent weight to enable adaptive targets."
             case .invalidData: return "Your target is holding steady."
             }

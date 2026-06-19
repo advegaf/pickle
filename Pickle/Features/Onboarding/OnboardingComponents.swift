@@ -67,8 +67,7 @@ struct SelectableCard: View {
                         .frame(width: 22, height: 22)
                     if selected {
                         Circle().fill(Palette.primary).frame(width: 22, height: 22)
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 11, weight: .bold))
+                        PickleIcon(.check, size: 12)
                             .foregroundStyle(Palette.background)
                     }
                 }

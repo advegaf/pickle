@@ -1,7 +1,7 @@
 import Foundation
 
 /// Compiled into BOTH the app and the widget. The app writes this small snapshot to the
-/// shared App Group container on every diary change; the widget reads it — so the widget
+/// shared App Group container on every diary change; the widget reads it, so the widget
 /// never touches SwiftData/CloudKit (no battery cost, no heavy extension work).
 struct DiarySnapshot: Codable, Equatable, Sendable {
     var localDay: String
@@ -18,9 +18,11 @@ struct DiarySnapshot: Codable, Equatable, Sendable {
     var mealsTotal: Int
 
     var remainingKcal: Int { max(targetKcal - consumedKcal, 0) }
+    var overKcal: Int { max(consumedKcal - targetKcal, 0) }
+    var isOver: Bool { consumedKcal > targetKcal }
     var fraction: Double { targetKcal > 0 ? min(Double(consumedKcal) / Double(targetKcal), 1) : 0 }
 
-    /// An empty day for `localDay` — what the widget shows after the midnight rollover.
+    /// An empty day for `localDay`, what the widget shows after the midnight rollover.
     static func empty(localDay: String, target: DiarySnapshot? = nil) -> DiarySnapshot {
         DiarySnapshot(localDay: localDay, updatedAt: Date(),
                       consumedKcal: 0, targetKcal: target?.targetKcal ?? 2000,

@@ -107,7 +107,7 @@ struct RecalculateSheet: View {
     private func rateLabel(_ kg: Double) -> String { String(format: "%.1f lb", kg * 2.2046226) }
     private func presetDetail(_ p: MacroSplit.Preset) -> String {
         guard let s = p.split else { return "" }
-        return "\(Int(s.protein*100))P · \(Int(s.carbs*100))C · \(Int(s.fat*100))F"
+        return "\(Int(s.protein*100))P   \(Int(s.carbs*100))C   \(Int(s.fat*100))F"
     }
     private func matchPreset(_ s: MacroSplit) -> MacroSplit.Preset {
         for p in MacroSplit.Preset.allCases where p.split == s { return p }

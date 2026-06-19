@@ -14,7 +14,7 @@ enum DedupMerger {
         var mergedCount = 0
 
         for (cid, twins) in groups where twins.count > 1 && !cid.isEmpty {
-            // Deterministic keeper: lowest UUID string (NOT timestamp — CloudKit batches
+            // Deterministic keeper: lowest UUID string (NOT timestamp, CloudKit batches
             // share server timestamps, so timestamps don't break ties reliably).
             let sorted = twins.sorted { $0.uuid.uuidString < $1.uuid.uuidString }
             let keeper = sorted[0]

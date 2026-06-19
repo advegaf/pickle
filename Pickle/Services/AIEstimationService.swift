@@ -27,10 +27,12 @@ protocol AIEstimating: Sendable {
 }
 
 enum AIEstimation {
-    /// Real proxy impl when the proxy is configured; otherwise the realistic mock so the
-    /// whole flow works end-to-end in development.
+    /// Direct Anthropic when a testing key is present, else the proxy when configured, else
+    /// the realistic mock so the whole flow works end-to-end in development.
     static func make() -> AIEstimating {
-        AppConfig.hasProxy ? ProxyAIEstimationService() : MockAIEstimationService()
+        if AppConfig.hasAnthropicKey { return AnthropicEstimationService() }
+        if AppConfig.hasProxy { return ProxyAIEstimationService() }
+        return MockAIEstimationService()
     }
 
     /// The sanity gate. Garbage must never auto-enter the diary and poison the adaptive plan.
@@ -49,7 +51,7 @@ enum AIEstimation {
 }
 
 /// Calls the proxy (which holds the Anthropic key + does the vision call) and decodes ONCE
-/// after the response completes — never per streaming delta, which would always throw on
+/// after the response completes, never per streaming delta, which would always throw on
 /// partial JSON. Inert until `PICKLE_PROXY_URL` is set.
 struct ProxyAIEstimationService: AIEstimating {
     func estimate(text: String) async throws -> [AIFoodItem] {

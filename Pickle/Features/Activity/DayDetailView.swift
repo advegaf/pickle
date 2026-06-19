@@ -5,6 +5,7 @@ struct DayDetailView: View {
     @EnvironmentObject private var store: PickleStore
     @Environment(\.dismiss) private var dismiss
     let localDay: String
+    @State private var detail: FoodCandidate?
 
     private var day: DiaryDay { store.diaryDay(localDay) }
 
@@ -23,6 +24,7 @@ struct DayDetailView: View {
                 .padding(.horizontal, Spacing.screen)
                 .padding(.vertical, Spacing.l)
             }
+            .scrollIndicators(.hidden)
             .background(Palette.background)
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
@@ -33,6 +35,13 @@ struct DayDetailView: View {
             }
         }
         .presentationBackground(Palette.background)
+        .sheet(item: $detail) { cand in
+            NavigationStack {
+                FoodDetailView(candidate: cand, presetMeal: .current) { detail = nil }
+            }
+            .environmentObject(store)
+            .presentationBackground(Palette.background)
+        }
     }
 
     private var totals: some View {
@@ -41,7 +50,7 @@ struct DayDetailView: View {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("\(t.kcal)")
                     .font(PickleFont.stat(44)).foregroundStyle(Palette.primary).monospacedDigit()
-                Text("kcal").font(PickleFont.body()).foregroundStyle(Palette.tertiary)
+                Text("cal").font(PickleFont.body()).foregroundStyle(Palette.tertiary)
             }
             .frame(maxWidth: .infinity)
             HStack(spacing: Spacing.xl) {
@@ -69,20 +78,32 @@ struct DayDetailView: View {
             VStack(spacing: 0) {
                 ForEach(entries) { entry in
                     HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(entry.name).font(PickleFont.bodyMedium(15)).foregroundStyle(Palette.primary)
-                            Text(portionLabel(entry)).font(PickleFont.caption(12)).foregroundStyle(Palette.tertiary)
+                        Button {
+                            if let cand = store.foodCandidate(forCanonicalID: entry.canonicalID) {
+                                detail = cand; Haptics.select()
+                            }
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(entry.name).font(PickleFont.bodyMedium(15)).foregroundStyle(Palette.primary)
+                                    Text(portionLabel(entry)).font(PickleFont.caption(12)).foregroundStyle(Palette.tertiary)
+                                }
+                                Spacer()
+                                Text("\(entry.macros.kcal) cal")
+                                    .font(PickleFont.caption()).foregroundStyle(Palette.secondary).monospacedDigit()
+                            }
+                            .contentShape(Rectangle())
                         }
-                        Spacer()
-                        Text("\(entry.macros.kcal) kcal")
-                            .font(PickleFont.caption()).foregroundStyle(Palette.secondary).monospacedDigit()
+                        .buttonStyle(.pressable)
+                        .accessibilityLabel("\(entry.name), \(entry.macros.kcal) calories, view")
+
                         Button { store.deleteLog(id: entry.id); Haptics.select() } label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 11, weight: .semibold))
+                            PickleIcon(.close, size: 11)
                                 .foregroundStyle(Palette.tertiary)
                                 .frame(width: 32, height: 32)
                         }
                         .buttonStyle(.pressable)
+                        .accessibilityLabel("Remove \(entry.name)")
                     }
                     .frame(minHeight: 48)
                     Divider().overlay(Palette.hairline)

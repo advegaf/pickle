@@ -22,7 +22,7 @@ enum Haptics {
     /// A deliberate, slightly heavier confirmation (custom food saved, plan built).
     static func confirm() { impactMedium.impactOccurred() }
 
-    /// The day's goal was met, or a milestone earned — the rare celebratory moment.
+    /// The day's goal was met, or a milestone earned, the rare celebratory moment.
     static func celebrate() { notification.notificationOccurred(.success) }
 
     /// Something failed in a way the user should feel (barcode not found, AI error).

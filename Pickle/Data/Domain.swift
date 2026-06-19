@@ -101,6 +101,21 @@ enum MealSlot: String, Codable, CaseIterable, Sendable, Identifiable {
         }
     }
     var sortOrder: Int { Self.allCases.firstIndex(of: self) ?? 0 }
+
+    /// The meal that best matches the current time of day, used as the default when logging
+    /// from the generic Log pill. The user can still tap to change it.
+    static var current: MealSlot { current(at: Date()) }
+
+    /// Time-of-day to meal mapping. Breakfast 04:00-10:59, lunch 11:00-15:59,
+    /// dinner 16:00-21:59, otherwise snack (late night / pre-dawn).
+    static func current(at date: Date, calendar: Calendar = .current) -> MealSlot {
+        switch calendar.component(.hour, from: date) {
+        case 4..<11: return .breakfast
+        case 11..<16: return .lunch
+        case 16..<22: return .dinner
+        default: return .snack
+        }
+    }
 }
 
 // MARK: - Macros

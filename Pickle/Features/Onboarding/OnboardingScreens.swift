@@ -7,7 +7,7 @@ struct HeroStep: View {
 
     var body: some View {
         ZStack {
-            DuotonePlaceholder(seed: 7).ignoresSafeArea()
+            TreatedImage(asset: "onboarding-hero", seed: 7).ignoresSafeArea()
             LinearGradient(colors: [.black.opacity(0.2), .black.opacity(0.9)],
                            startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
@@ -38,8 +38,7 @@ struct PrivacyStep: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer()
             VStack(alignment: .leading, spacing: Spacing.l) {
-                Image(systemName: "lock.shield")
-                    .font(.system(size: 34, weight: .light))
+                PickleIcon(.shield, size: 34)
                     .foregroundStyle(Palette.primary)
                 Text("Your data stays\nyours.")
                     .font(PickleFont.display(32))
@@ -48,7 +47,7 @@ struct PrivacyStep: View {
                     .font(PickleFont.body(16))
                     .foregroundStyle(Palette.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Text("Photos you send to AI logging are the one exception — those are processed to estimate macros, then discarded.")
+                Text("Photos you send to AI logging are the one exception, those are processed to estimate macros, then discarded.")
                     .font(PickleFont.caption())
                     .foregroundStyle(Palette.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -58,6 +57,108 @@ struct PrivacyStep: View {
         }
         .padding(.horizontal, Spacing.screen)
         .padding(.vertical, Spacing.xl)
+    }
+}
+
+// MARK: - Connect Apple Health
+
+/// The smart-setup step. Pulls real body data and movement from Apple Health and prefills the
+/// plan, with a clean manual fallback when Health is unavailable or denied.
+struct HealthConnectStep: View {
+    @Binding var draft: ProfileData
+    let onContinue: () -> Void
+
+    @StateObject private var health = HealthKitService.shared
+    @State private var working = false
+    @State private var imported: BodyProfile?
+
+    private var connected: Bool { imported != nil }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer()
+            VStack(alignment: .leading, spacing: Spacing.l) {
+                PickleIcon(.health, size: 40)
+                    .foregroundStyle(Palette.primary)
+                Text(connected ? "You're all set." : "Set up\nautomatically.")
+                    .font(PickleFont.display(32))
+                    .foregroundStyle(Palette.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(connected
+                     ? "Pickle pulled your numbers from Apple Health and tuned your plan. You can adjust anything next."
+                     : "Connect Apple Health and Pickle builds your plan from your real weight, body composition, and movement. The smartest setup in the market.")
+                    .font(PickleFont.body(16))
+                    .foregroundStyle(Palette.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if let bp = imported { importedSummary(bp) }
+            }
+            Spacer()
+            VStack(spacing: Spacing.s) {
+                PrimaryButton(title: buttonTitle, enabled: !working) {
+                    if connected { onContinue() } else { connect() }
+                }
+                if !connected && !working {
+                    TextLink(title: "Set up manually") { onContinue() }
+                }
+            }
+        }
+        .padding(.horizontal, Spacing.screen)
+        .padding(.vertical, Spacing.xl)
+    }
+
+    private var buttonTitle: String {
+        if working { return "Connecting…" }
+        return connected ? "Continue" : "Connect Apple Health"
+    }
+
+    private func importedSummary(_ bp: BodyProfile) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            if let w = bp.weightKg { importedRow("Weight", String(format: "%.0f lb", w * 2.2046226)) }
+            if let l = bp.leanMassKg { importedRow("Lean mass", String(format: "%.0f lb", l * 2.2046226)) }
+            if let act = bp.inferredActivity { importedRow("Activity", act.title) }
+            if let steps = bp.avgDailySteps { importedRow("Daily steps", "\(Int(steps))") }
+        }
+        .padding(.top, Spacing.s)
+    }
+
+    private func importedRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            PickleIcon(.check, size: 12)
+                .foregroundStyle(Palette.success)
+            Text(label).font(PickleFont.caption()).foregroundStyle(Palette.tertiary)
+            Spacer()
+            Text(value).font(PickleFont.caption()).foregroundStyle(Palette.secondary).monospacedDigit()
+        }
+    }
+
+    private func connect() {
+        working = true
+        Task {
+            _ = await health.requestAuthorization()
+            let bp = await health.fetchBodyProfile()
+            draft.merge(health: bp)
+            working = false
+            if bp.isEmpty {
+                // Nothing came back (simulator, or read denied). Proceed to manual entry.
+                onContinue()
+            } else {
+                imported = bp
+                Haptics.confirm()
+            }
+        }
+    }
+}
+
+extension ProfileData {
+    /// Fill in whatever Apple Health provided, leaving the rest at defaults.
+    mutating func merge(health bp: BodyProfile) {
+        if let w = bp.weightKg { weightKg = w }
+        if let h = bp.heightCm { heightCm = h }
+        if let l = bp.leanMassKg { leanMassKg = l }
+        if let s = bp.sex { sex = s }
+        if let a = bp.age { age = a }
+        if let act = bp.inferredActivity { activity = act }
     }
 }
 
@@ -249,7 +350,7 @@ struct SplitStep: View {
 
     private func detail(_ p: MacroSplit.Preset) -> String {
         guard let s = p.split else { return "" }
-        return "\(Int(s.protein*100))P · \(Int(s.carbs*100))C · \(Int(s.fat*100))F"
+        return "\(Int(s.protein*100))P   \(Int(s.carbs*100))C   \(Int(s.fat*100))F"
     }
 
     private func matchPreset(_ s: MacroSplit) -> MacroSplit.Preset {
@@ -301,7 +402,7 @@ struct ReviewStep: View {
                         MacroBar(label: "Fat", short: "F", value: plan.fatG, target: plan.fatG, tint: Palette.fat)
                     }
 
-                    Text("Pickle refines this every week from what you log and how your weight trends — so it gets more accurate the longer you use it.")
+                    Text("Pickle refines this every week from what you log and how your weight trends, so it gets more accurate the longer you use it.")
                         .font(PickleFont.caption())
                         .foregroundStyle(Palette.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -322,20 +423,24 @@ struct ReviewStep: View {
 struct BuildingStep: View {
     let name: String
     let onFinished: () -> Void
+    @State private var done = false
 
     var body: some View {
         VStack(spacing: Spacing.xl) {
             Spacer()
-            DotLoader(size: 56, dot: 12)
-            Text("BUILDING YOUR PLAN")
+            DotLoader(size: 56, dot: 12, done: done)
+            Text(done ? "PLAN READY" : "BUILDING YOUR PLAN")
                 .font(PickleFont.eyebrow(13))
                 .tracking(3)
                 .foregroundStyle(Palette.primary)
+                .contentTransition(.opacity)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .task {
-            try? await Task.sleep(for: .milliseconds(2200))
+            try? await Task.sleep(for: .milliseconds(1900))
+            withAnimation { done = true }
+            try? await Task.sleep(for: .milliseconds(550))
             onFinished()
         }
     }

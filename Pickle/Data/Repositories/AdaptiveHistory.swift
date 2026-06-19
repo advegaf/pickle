@@ -46,4 +46,56 @@ extension PickleStore {
             goal: p.planGoal,
             input: adaptiveInput(windowDays: windowDays))
     }
+
+    /// A compact, natural-language picture of the user's recent logging for the AI coach:
+    /// goal and targets, average intake vs target, protein adherence today, weight trend,
+    /// streak, and the estimated maintenance. The cache key changes once per day and whenever
+    /// the numbers move, so the coach regenerates at most daily.
+    func coachingSummary(windowDays: Int = 14) -> CoachingSummary {
+        let p = profile()
+        let input = adaptiveInput(windowDays: windowDays)
+        let rec = adaptiveRecommendation(windowDays: windowDays)
+        let samples = weights()
+        let streak = StreakCalculator.currentStreak(loggedDays: loggedDays(), today: todayKey())
+        let today = today().totals
+        let t = p.targets
+
+        var lines: [String] = []
+        lines.append("Goal: \(p.goal.title). Daily target \(t.kcal) cal (protein \(t.proteinG) g, carbs \(t.carbsG) g, fat \(t.fatG) g).")
+
+        if input.loggedDays > 0 {
+            let avg = Int(input.avgDailyIntakeKcal.rounded())
+            let delta = avg - t.kcal
+            let vs = delta == 0 ? "right on target" : "\(abs(delta)) cal \(delta > 0 ? "over" : "under") target"
+            lines.append("Last \(windowDays) days: logged \(input.loggedDays) of \(windowDays) days, averaging \(avg) cal/day (\(vs)).")
+        } else {
+            lines.append("No days logged in the last \(windowDays) days yet.")
+        }
+
+        if t.proteinG > 0 {
+            let pct = Int((Double(today.proteinG) / Double(t.proteinG) * 100).rounded())
+            lines.append("Today so far: \(today.kcal) cal, protein \(today.proteinG) of \(t.proteinG) g (\(pct)%).")
+        }
+
+        if let first = samples.first, let last = samples.last, samples.count >= 2 {
+            let deltaLb = (last.kg - first.kg) * 2.2046226
+            if abs(deltaLb) < 0.3 {
+                lines.append("Weight is flat over the window.")
+            } else {
+                lines.append(String(format: "Weight trend: %@%.1f lb over the window.", deltaLb > 0 ? "+" : "", deltaLb))
+            }
+        }
+
+        if let maintenance = rec.estimatedMaintenanceKcal {
+            lines.append("Estimated true maintenance is about \(maintenance) cal/day.")
+        }
+        lines.append("Current logging streak: \(streak) day\(streak == 1 ? "" : "s").")
+
+        let weightKey = samples.last.map { Int(($0.kg * 10).rounded()) } ?? 0
+        let cacheKey = "\(todayKey())|d=\(input.loggedDays)|avg=\(Int(input.avgDailyIntakeKcal.rounded()))|w=\(weightKey)|t=\(t.kcal)|p=\(t.proteinG)|streak=\(streak)"
+
+        return CoachingSummary(text: lines.joined(separator: "\n"),
+                               cacheKey: cacheKey,
+                               loggedDays: input.loggedDays)
+    }
 }

@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Press feedback
 
-/// Scale-on-press (0.96) — the universal tactile feedback for any pressable surface.
+/// Scale-on-press (0.96), the universal tactile feedback for any pressable surface.
 /// Respects Reduce Motion (drops the scale, keeps a subtle opacity dim).
 struct PressableButtonStyle: ButtonStyle {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -22,7 +22,7 @@ extension ButtonStyle where Self == PressableButtonStyle {
 
 // MARK: - Primary / Secondary / Text
 
-/// White-filled rectangle. One per screen — the single most important action.
+/// White-filled rectangle. One per screen, the single most important action.
 struct PrimaryButton: View {
     let title: String
     var enabled: Bool = true
@@ -43,7 +43,7 @@ struct PrimaryButton: View {
     }
 }
 
-/// 1px-outlined rectangle — secondary action.
+/// 1px-outlined rectangle, secondary action.
 struct SecondaryButton: View {
     let title: String
     let action: () -> Void
@@ -63,7 +63,7 @@ struct SecondaryButton: View {
     }
 }
 
-/// Underlined text link — tertiary action.
+/// Underlined text link, tertiary action.
 struct TextLink: View {
     let title: String
     let action: () -> Void

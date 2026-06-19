@@ -20,6 +20,7 @@ struct RootView: View {
                 OnboardingFlow(onComplete: { withAnimation(Motion.easeOut) { onboarded = true } })
             }
         }
+        .scrollIndicators(.hidden)
         .task {
             applyLaunchOptions()
             onboarded = store.hasCompletedOnboarding
@@ -33,24 +34,55 @@ struct RootView: View {
         if LaunchOptions.reset { DemoSeed.reset(store) }
         if LaunchOptions.seedDemo { DemoSeed.seed(store) }
         if ProcessInfo.processInfo.arguments.contains("--seed-empty") { DemoSeed.seedEmpty(store) }
+        if ProcessInfo.processInfo.arguments.contains("--seed-over") { DemoSeed.seedOver(store) }
         #endif
     }
 }
 
-/// Black canvas with the letterspaced wordmark, gently fading in.
+/// Black canvas. The wordmark reveals one letter at a time, left to right.
 struct SplashView: View {
-    @State private var appeared = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
     var body: some View {
         ZStack {
             Palette.background.ignoresSafeArea()
-            Wordmark(size: 24)
-                .opacity(appeared ? 1 : 0)
-                .scaleEffect(reduceMotion ? 1 : (appeared ? 1 : 0.96))
+            RevealWordmark(size: 24)
         }
+    }
+}
+
+/// `P I C K L E` revealed letter by letter from left to right, each letter rising and
+/// sharpening into place on a short stagger. Reduce Motion shows a plain fade.
+struct RevealWordmark: View {
+    var text: String = "PICKLE"
+    var size: CGFloat = 24
+    @State private var revealed = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var letters: [Character] { Array(text) }
+    private let perLetter: Double = 0.085
+
+    var body: some View {
+        HStack(spacing: size * 0.42) {
+            ForEach(Array(letters.enumerated()), id: \.offset) { i, ch in
+                Text(String(ch))
+                    .font(PickleFont.font(.bold, size))
+                    .foregroundStyle(Palette.primary)
+                    .opacity(i < revealed ? 1 : 0)
+                    .offset(y: reduceMotion ? 0 : (i < revealed ? 0 : Motion.Distance.small))
+                    .blur(radius: reduceMotion ? 0 : (i < revealed ? 0 : Motion.Blur.entrance))
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Pickle")
         .onAppear {
-            withAnimation(.easeOut(duration: 0.7)) { appeared = true }
+            if reduceMotion {
+                withAnimation(.easeOut(duration: Motion.Duration.slow)) { revealed = letters.count }
+                return
+            }
+            for i in letters.indices {
+                withAnimation(Motion.entrance.delay(Double(i) * perLetter)) {
+                    revealed = i + 1
+                }
+            }
         }
     }
 }

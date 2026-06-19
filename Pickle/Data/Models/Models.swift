@@ -15,6 +15,7 @@ final class UserProfile {
     var age: Int = 30
     var heightCm: Double = 175
     var weightKg: Double = 75
+    var leanMassKg: Double = 0
 
     var activityRaw: String = ActivityLevel.moderate.rawValue
     var goalRaw: String = GoalDirection.maintain.rawValue
@@ -49,7 +50,7 @@ final class UserProfile {
 @Model
 final class FoodItemEntry {
     /// Stable identity used to pick a deterministic keeper when CloudKit creates twins.
-    /// (Not timestamp — CloudKit batches share server timestamps.)
+    /// (Not timestamp, CloudKit batches share server timestamps.)
     var uuid: UUID = UUID()
     var canonicalID: String = ""
     var name: String = ""

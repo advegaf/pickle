@@ -44,13 +44,26 @@ enum DemoSeed {
         try? ctx.save()
     }
 
-    /// Onboarding complete but nothing logged — the first-run empty Home state.
+    /// Onboarding complete but nothing logged, the first-run empty Home state.
     static func seedEmpty(_ store: PickleStore) {
         reset(store)
         var p = ProfileData()
         p.name = "Alex"; p.sex = .male; p.age = 28; p.heightCm = 180; p.weightKg = 82
         p.activity = .active; p.goal = .lose; p.weeklyRateKg = 0.5; p.split = .highProtein
         store.completeOnboarding(p)
+    }
+
+    /// Onboarded with today's intake pushed OVER target, to verify the "X over" ring state.
+    static func seedOver(_ store: PickleStore) {
+        seedEmpty(store)
+        let target = store.profile().targets.kcal
+        let kcal = target + 250
+        let cand = FoodCandidate(name: "Big Day", brand: nil, source: .common, sourceID: "big-day",
+                                 barcode: nil,
+                                 nutrition: FoodNutrition(kcalPer100: Double(kcal), proteinPer100: 30,
+                                                          carbsPer100: 40, fatPer100: 20, servingGrams: 100))
+        store.log(cand, amount: 1, unit: .serving, meal: .dinner,
+                  macros: MacroTargets(kcal: kcal, proteinG: 30, carbsG: 40, fatG: 20))
     }
 
     /// A completed profile, a few days of history (for streak/activity/coach), and a couple

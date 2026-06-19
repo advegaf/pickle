@@ -3,14 +3,15 @@ import PhotosUI
 
 /// Describe a meal in words or snap a photo; the model returns an itemized estimate you can
 /// edit before logging. Low-confidence / implausible items are flagged and must be confirmed
-/// — never silently added (the sanity gate protects the adaptive plan).
+///, never silently added (the sanity gate protects the adaptive plan).
 struct AILogView: View {
     @EnvironmentObject private var store: PickleStore
     let onConfirm: () -> Void
 
     @State private var text = ""
-    @State private var meal: MealSlot = .snack
+    @State private var meal: MealSlot = .current
     @State private var phase: Phase = .input
+    @State private var thinkingDone = false
     @State private var items: [AIFoodItem] = []
     @State private var photoItem: PhotosPickerItem?
     @FocusState private var focused: Bool
@@ -62,7 +63,7 @@ struct AILogView: View {
 
             PhotosPicker(selection: $photoItem, matching: .images) {
                 HStack(spacing: Spacing.s) {
-                    Image(systemName: "camera")
+                    PickleIcon(.camera, size: 17)
                     Text("Add a photo")
                 }
                 .font(PickleFont.button(15))
@@ -101,8 +102,8 @@ struct AILogView: View {
     private var thinkingState: some View {
         VStack(spacing: Spacing.l) {
             Spacer()
-            DotLoader(size: 52, dot: 11)
-            Text("Estimating your meal…")
+            DotLoader(size: 52, dot: 11, done: thinkingDone)
+            Text(thinkingDone ? "Done" : "Estimating your meal…")
                 .font(PickleFont.body(15)).foregroundStyle(Palette.secondary)
             Spacer()
         }
@@ -115,9 +116,9 @@ struct AILogView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     HStack {
-                        Eyebrow(text: "Estimated · \(items.count) items")
+                        Eyebrow(text: "Estimated   \(items.count) items")
                         Spacer()
-                        Text("\(totalKcal) kcal")
+                        Text("\(totalKcal) cal")
                             .font(PickleFont.bodyMedium(15))
                             .foregroundStyle(Palette.primary)
                             .monospacedDigit()
@@ -126,7 +127,7 @@ struct AILogView: View {
                         AIItemCard(item: $item)
                     }
                     if items.contains(where: \.needsReview) {
-                        Text("Items marked “review” looked uncertain — tap to confirm before logging.")
+                        Text("Items marked “review” looked uncertain, tap to confirm before logging.")
                             .font(PickleFont.caption())
                             .foregroundStyle(Palette.tertiary)
                     }
@@ -148,8 +149,7 @@ struct AILogView: View {
     private func failedState(_ message: String) -> some View {
         VStack(spacing: Spacing.l) {
             Spacer()
-            Image(systemName: "exclamationmark.bubble")
-                .font(.system(size: 36, weight: .light))
+            PickleIcon(.alert, size: 36)
                 .foregroundStyle(Palette.tertiary)
             Text(message)
                 .font(PickleFont.bodyMedium(16)).foregroundStyle(Palette.primary)
@@ -172,10 +172,18 @@ struct AILogView: View {
         do {
             let raw = try await service.estimate(text: text)
             items = AIEstimation.applySanity(raw)
-            phase = .review
+            await finishThinking()
         } catch {
             phase = .failed(message(for: error))
         }
+    }
+
+    /// Play the loader's converge-to-one, then reveal the results.
+    private func finishThinking() async {
+        withAnimation { thinkingDone = true }
+        try? await Task.sleep(for: .milliseconds(450))
+        phase = .review
+        thinkingDone = false
     }
 
     private func runPhoto(_ item: PhotosPickerItem) async {
@@ -187,7 +195,7 @@ struct AILogView: View {
             }
             let raw = try await service.estimate(imageJPEG: data)
             items = AIEstimation.applySanity(raw)
-            phase = .review
+            await finishThinking()
         } catch {
             phase = .failed(message(for: error))
         }
@@ -196,7 +204,7 @@ struct AILogView: View {
     private func message(for error: Error) -> String {
         switch error as? AIEstimationError {
         case .unavailable: return "AI logging isn't set up yet. Log manually for now."
-        case .couldNotRead: return "Couldn't read that — try again or describe it in words."
+        case .couldNotRead: return "Couldn't read that, try again or describe it in words."
         default: return "AI is unavailable right now. Log manually for now."
         }
     }
@@ -224,16 +232,16 @@ struct AIItemCard: View {
                     .font(PickleFont.bodyMedium(16))
                     .foregroundStyle(Palette.primary)
                 Spacer()
-                Text("\(item.macros.kcal) kcal")
+                Text("\(item.macros.kcal) cal")
                     .font(PickleFont.caption())
                     .foregroundStyle(Palette.secondary)
                     .monospacedDigit()
             }
-            HStack {
-                Text("\(item.portion)  ·  P \(item.macros.proteinG) C \(item.macros.carbsG) F \(item.macros.fatG)")
+            HStack(spacing: Spacing.s) {
+                Text(item.portion)
                     .font(PickleFont.caption(12))
                     .foregroundStyle(Palette.tertiary)
-                    .monospacedDigit()
+                MacroLine(macros: item.macros)
                 Spacer()
                 if item.needsReview {
                     Button { item.needsReview = false; Haptics.select() } label: {

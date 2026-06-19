@@ -54,11 +54,14 @@ struct StatBlock: View {
 
 // MARK: - 4-dot orbit loader
 
-/// The reference's loading animation — four dots orbiting. Honors Reduce Motion
+/// The reference's loading animation, four dots orbiting. Honors Reduce Motion
 /// (falls back to a gentle opacity pulse).
 struct DotLoader: View {
     var size: CGFloat = 56
     var dot: CGFloat = 12
+    /// Flip to true when the work finishes: the four orbiting dots spiral inward and merge
+    /// into a single dot. Caller should pause briefly after setting this so the merge plays.
+    var done: Bool = false
     @State private var angle: Double = 0
     @State private var pulse = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -67,12 +70,15 @@ struct DotLoader: View {
         Group {
             if reduceMotion {
                 HStack(spacing: 8) {
-                    ForEach(0..<4, id: \.self) { _ in
-                        Circle().fill(Palette.primary).frame(width: dot, height: dot)
+                    ForEach(0..<4, id: \.self) { i in
+                        Circle().fill(Palette.primary)
+                            .frame(width: dot, height: dot)
+                            .opacity(done && i != 0 ? 0 : 1)
                     }
                 }
-                .opacity(pulse ? 0.4 : 1)
+                .opacity(done ? 1 : (pulse ? 0.4 : 1))
                 .animation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true), value: pulse)
+                .animation(.easeOut(duration: 0.25), value: done)
                 .onAppear { pulse = true }
             } else {
                 ZStack {
@@ -80,20 +86,23 @@ struct DotLoader: View {
                         Circle()
                             .fill(Palette.primary)
                             .frame(width: dot, height: dot)
-                            .offset(y: -size / 2)
+                            .scaleEffect(done && i == 0 ? 1.3 : 1)
+                            .opacity(done && i != 0 ? 0 : 1)
+                            .offset(y: done ? 0 : -size / 2)   // converge to center when done
                             .rotationEffect(.degrees(Double(i) / 4 * 360))
                     }
                 }
                 .frame(width: size, height: size)
-                .rotationEffect(.degrees(angle))
+                .rotationEffect(.degrees(angle))   // keeps spinning; invisible once dots are centered
+                .animation(Motion.lively, value: done)
                 .onAppear {
-                    withAnimation(.linear(duration: 1.1).repeatForever(autoreverses: false)) {
+                    withAnimation(.linear(duration: 1.0).repeatForever(autoreverses: false)) {
                         angle = 360
                     }
                 }
             }
         }
-        .accessibilityLabel("Loading")
+        .accessibilityLabel(done ? "Done" : "Loading")
     }
 }
 
@@ -124,7 +133,7 @@ struct CategoryButton: View {
             HStack {
                 StatBlock(number: "3", label: "Day streak")
                 StatBlock(number: "12", label: "Days logged")
-                StatBlock(number: "1,980", label: "Avg kcal")
+                StatBlock(number: "1,980", label: "Avg cal")
             }
             DotLoader()
             HStack(spacing: Spacing.m) {

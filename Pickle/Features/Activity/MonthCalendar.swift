@@ -28,16 +28,15 @@ struct MonthCalendar: View {
                 .foregroundStyle(Palette.primary)
             Spacer()
             HStack(spacing: Spacing.l) {
-                navButton("chevron.left") { onShiftMonth(-1) }
-                navButton("chevron.right") { onShiftMonth(1) }
+                navButton(.chevronLeft) { onShiftMonth(-1) }
+                navButton(.chevronRight) { onShiftMonth(1) }
             }
         }
     }
 
-    private func navButton(_ symbol: String, _ action: @escaping () -> Void) -> some View {
+    private func navButton(_ glyph: Glyph, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 15, weight: .medium))
+            PickleIcon(glyph, size: 15)
                 .foregroundStyle(Palette.secondary)
                 .frame(width: 40, height: 40)
         }

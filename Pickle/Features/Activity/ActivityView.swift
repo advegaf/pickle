@@ -52,7 +52,7 @@ struct ActivityView: View {
             Spacer()
             Button { showAddWeight = true } label: {
                 HStack(spacing: 5) {
-                    Image(systemName: "plus").font(.system(size: 13, weight: .semibold))
+                    PickleIcon(.add, size: 14)
                     Text("Weight").font(PickleFont.button(14))
                 }
                 .foregroundStyle(Palette.primary)
@@ -88,7 +88,7 @@ struct ActivityView: View {
             HStack {
                 StatBlock(number: "\(stats.streak)", label: "Day streak")
                 StatBlock(number: "\(stats.daysLogged)", label: "Days logged")
-                StatBlock(number: stats.avgKcal > 0 ? "\(stats.avgKcal)" : "—", label: "Avg kcal")
+                StatBlock(number: stats.avgKcal > 0 ? "\(stats.avgKcal)" : "-", label: "Avg cal")
             }
         }
     }
@@ -97,7 +97,7 @@ struct ActivityView: View {
         if stats.daysLogged < 7 {
             VStack(alignment: .leading, spacing: Spacing.s) {
                 Eyebrow(text: "Insights")
-                Text("Keep logging — after 7 days, Pickle starts surfacing trends and refining your plan.")
+                Text("Keep logging, after 7 days, Pickle starts surfacing trends and refining your plan.")
                     .font(PickleFont.body(14))
                     .foregroundStyle(Palette.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -118,14 +118,13 @@ struct ActivityView: View {
                                     Text(longDate(day))
                                         .font(PickleFont.bodyMedium(16))
                                         .foregroundStyle(Palette.primary)
-                                    Text("\(kcalByDay[day] ?? 0) kcal logged")
+                                    Text("\(kcalByDay[day] ?? 0) cal logged")
                                         .font(PickleFont.caption())
                                         .foregroundStyle(Palette.tertiary)
                                         .monospacedDigit()
                                 }
                                 Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 13, weight: .medium))
+                                PickleIcon(.chevronRight, size: 13)
                                     .foregroundStyle(Palette.tertiary)
                             }
                             .frame(minHeight: 56)

@@ -1,9 +1,17 @@
 import SwiftUI
+import UIKit
 
 @main
 struct PickleApp: App {
     @StateObject private var store = PickleStore.live()
     @State private var remoteObserver: RemoteChangeObserver?
+
+    init() {
+        // No system scroll bars anywhere. The clean Apple look; SwiftUI ScrollViews are
+        // backed by UIScrollView, so this hides the indicator app wide in one place.
+        UIScrollView.appearance().showsVerticalScrollIndicator = false
+        UIScrollView.appearance().showsHorizontalScrollIndicator = false
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -18,6 +26,7 @@ struct PickleApp: App {
                         remoteObserver = observer
                     }
                     Haptics.prepare()
+                    HealthKitService.shared.refreshAuthorization()
                     store.refreshWidgetSnapshot()
                 }
         }

@@ -1,14 +1,13 @@
 import SwiftUI
 
-/// A tab in the custom bar. `icon` is an SF Symbol rendered at a thin weight to echo
-/// the reference's hairline glyphs.
+/// A tab in the custom bar. `icon` is a Hugeicons glyph, white when active, gray when not.
 struct PickleTabItem: Identifiable, Equatable {
     let id: Int
-    let icon: String
+    let icon: Glyph
     let label: String
 }
 
-/// Custom 5-item tab bar — thin-stroke icons, white when active, gray when not, on a
+/// Custom 5-item tab bar, thin-stroke icons, white when active, gray when not, on a
 /// black bar with a top hairline. A selection change fires a selection haptic.
 struct PickleTabBar: View {
     let items: [PickleTabItem]
@@ -25,9 +24,7 @@ struct PickleTabBar: View {
                     }
                 } label: {
                     VStack(spacing: 5) {
-                        Image(systemName: item.icon)
-                            .font(.system(size: 22, weight: active ? .regular : .light))
-                            .symbolVariant(active ? .fill : .none)
+                        PickleIcon(item.icon, size: 25)
                         Text(item.label)
                             .font(PickleFont.caption(10))
                     }
@@ -53,11 +50,11 @@ struct PickleTabBar: View {
 extension PickleTabItem {
     /// The app's five tabs, in order.
     static let pickleTabs: [PickleTabItem] = [
-        .init(id: 0, icon: "house", label: "Home"),
-        .init(id: 1, icon: "rhombus", label: "Explore"),
-        .init(id: 2, icon: "stopwatch", label: "Coach"),
-        .init(id: 3, icon: "circle.hexagonpath", label: "Activity"),
-        .init(id: 4, icon: "ellipsis", label: "More"),
+        .init(id: 0, icon: .home, label: "Home"),
+        .init(id: 1, icon: .explore, label: "Explore"),
+        .init(id: 2, icon: .coach, label: "Coach"),
+        .init(id: 3, icon: .activity, label: "Activity"),
+        .init(id: 4, icon: .more, label: "More"),
     ]
 }
 

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "article-eating-out.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

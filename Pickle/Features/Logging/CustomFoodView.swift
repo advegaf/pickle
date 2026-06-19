@@ -26,7 +26,7 @@ struct CustomFoodView: View {
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Eyebrow(text: "Nutrition per serving")
                     UtilityStepper(label: "Serving size", value: $servingGrams, step: 5, range: 1...2000, unit: "g")
-                    UtilityStepper(label: "Calories", value: $kcal, step: 10, range: 0...5000, unit: "kcal")
+                    UtilityStepper(label: "Calories", value: $kcal, step: 10, range: 0...5000, unit: "cal")
                     HStack(spacing: Spacing.l) {
                         UtilityStepper(label: "Protein", value: $protein, step: 1, range: 0...500, unit: "g")
                         UtilityStepper(label: "Carbs", value: $carbs, step: 1, range: 0...500, unit: "g")

@@ -59,9 +59,13 @@ struct FoodCandidate: Identifiable, Equatable, Sendable, Hashable {
     }
 
     var displayDetail: String {
-        let kcal = Int(nutrition.kcalPer100.rounded())
-        let per = nutrition.servingGrams != nil ? "serving" : "100g"
-        if let brand, !brand.isEmpty { return "\(brand) · \(kcal) kcal/\(per)" }
-        return "\(kcal) kcal/\(per)"
+        // Energy for one labelled serving when known, else per 100 g. (The stored values are
+        // per-100 g, so showing kcalPer100 under a "serving" label was wrong, e.g. an egg read
+        // 143 cal/serving when one ~50 g egg is ~72.)
+        let grams = nutrition.servingGrams
+        let kcal = nutrition.macros(forGrams: grams ?? 100).kcal
+        let per = grams != nil ? "serving" : "100g"
+        if let brand, !brand.isEmpty { return "\(brand)   \(kcal) cal/\(per)" }
+        return "\(kcal) cal/\(per)"
     }
 }

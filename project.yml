@@ -1,6 +1,6 @@
 name: Pickle
 options:
-  bundleIdPrefix: com.pickle
+  bundleIdPrefix: com.angelvega
   deploymentTarget:
     iOS: "18.0"
   createIntermediateGroups: true
@@ -11,7 +11,7 @@ settings:
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
     SWIFT_VERSION: "5.0"
-    DEVELOPMENT_TEAM: ""
+    DEVELOPMENT_TEAM: "DV483F72N3"
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     GENERATE_INFOPLIST_FILE: YES
@@ -28,7 +28,7 @@ targets:
       Release: Config/Secrets.xcconfig
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.pickle.tracker
+        PRODUCT_BUNDLE_IDENTIFIER: com.angelvega.pickle
         GENERATE_INFOPLIST_FILE: NO
     info:
       path: Pickle/Info.plist
@@ -37,7 +37,7 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen:
-          UIColorName: ""
+          UIColorName: "LaunchBackground"
         UIStatusBarStyle: UIStatusBarStyleLightContent
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -47,6 +47,9 @@ targets:
         NSPhotoLibraryUsageDescription: "Pickle uses photos of your meals to estimate calories and macros."
         ITSAppUsesNonExemptEncryption: NO
         PickleProxyURL: $(PICKLE_PROXY_URL)
+        PickleAnthropicKey: $(ANTHROPIC_API_KEY)
+        UIBackgroundModes:
+          - remote-notification
     entitlements:
       path: Pickle/Pickle.entitlements
       properties:
@@ -54,6 +57,11 @@ targets:
           - group.com.pickle.tracker
         com.apple.developer.healthkit: true
         com.apple.developer.healthkit.access: []
+        com.apple.developer.icloud-services:
+          - CloudKit
+        com.apple.developer.icloud-container-identifiers:
+          - iCloud.com.pickle.tracker
+        aps-environment: development
     dependencies:
       - target: PickleWidgetExtension
 
@@ -65,7 +73,7 @@ targets:
       - path: Shared
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.pickle.tracker.widget
+        PRODUCT_BUNDLE_IDENTIFIER: com.angelvega.pickle.widget
         INFOPLIST_KEY_CFBundleDisplayName: Pickle
         PRODUCT_NAME: PickleWidget
     info:
@@ -87,8 +95,21 @@ targets:
       - path: PickleTests
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.pickle.tracker.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.angelvega.pickle.tests
         GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: Pickle
+
+  PickleUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: PickleUITests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.angelvega.pickle.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Pickle
     dependencies:
       - target: Pickle
 
@@ -104,3 +125,4 @@ schemes:
       config: Debug
       targets:
         - PickleTests
+        - PickleUITests

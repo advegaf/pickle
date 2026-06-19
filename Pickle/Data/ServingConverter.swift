@@ -3,7 +3,7 @@ import Foundation
 /// Converts portion amounts between units and computes macros for a chosen portion.
 /// Conversion is only valid within a physical dimension (mass↔mass, volume↔volume).
 /// Across dimensions it needs a food-specific bridge (grams-per-serving); without one it
-/// refuses rather than guessing — a wrong guess silently corrupts every downstream macro.
+/// refuses rather than guessing, a wrong guess silently corrupts every downstream macro.
 enum ServingConverter {
 
     /// Convert `amount` of `from` into `to`, within the same dimension. nil across

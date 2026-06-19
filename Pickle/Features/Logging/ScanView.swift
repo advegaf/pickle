@@ -82,8 +82,7 @@ struct ScanView: View {
     private var unsupportedState: some View {
         VStack(spacing: Spacing.l) {
             Spacer()
-            Image(systemName: "barcode.viewfinder")
-                .font(.system(size: 40, weight: .light))
+            PickleIcon(.scan, size: 40)
                 .foregroundStyle(Palette.tertiary)
             Text("Scanning needs a camera")
                 .font(PickleFont.bodyMedium(17)).foregroundStyle(Palette.primary)

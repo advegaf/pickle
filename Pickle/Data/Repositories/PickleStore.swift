@@ -8,6 +8,8 @@ struct ProfileData: Equatable, Sendable {
     var age: Int = 30
     var heightCm: Double = 175
     var weightKg: Double = 75
+    /// Lean body mass in kg from Apple Health, 0 when unknown.
+    var leanMassKg: Double = 0
     var activity: ActivityLevel = .moderate
     var goal: GoalDirection = .maintain
     var weeklyRateKg: Double = 0
@@ -16,7 +18,8 @@ struct ProfileData: Equatable, Sendable {
     var onboardingComplete: Bool = false
 
     var planProfile: PlanCalculator.Profile {
-        .init(sex: sex, age: age, heightCm: heightCm, weightKg: weightKg, activity: activity)
+        .init(sex: sex, age: age, heightCm: heightCm, weightKg: weightKg, activity: activity,
+              leanMassKg: leanMassKg > 0 ? leanMassKg : nil)
     }
     var planGoal: PlanCalculator.Goal {
         .init(direction: goal, weeklyRateKg: weeklyRateKg, split: split)
@@ -60,7 +63,7 @@ final class PickleStore: ObservableObject {
     func profile() -> ProfileData {
         let m = profileModel()
         return ProfileData(name: m.name, sex: m.sex, age: m.age, heightCm: m.heightCm,
-                           weightKg: m.weightKg, activity: m.activity, goal: m.goal,
+                           weightKg: m.weightKg, leanMassKg: m.leanMassKg, activity: m.activity, goal: m.goal,
                            weeklyRateKg: m.weeklyRateKg, split: m.split, targets: m.targets,
                            onboardingComplete: m.onboardingComplete)
     }
@@ -119,7 +122,7 @@ final class PickleStore: ObservableObject {
 
     private func apply(_ data: ProfileData, to m: UserProfile) {
         m.name = data.name; m.sex = data.sex; m.age = data.age
-        m.heightCm = data.heightCm; m.weightKg = data.weightKg
+        m.heightCm = data.heightCm; m.weightKg = data.weightKg; m.leanMassKg = data.leanMassKg
         m.activity = data.activity; m.goal = data.goal; m.weeklyRateKg = data.weeklyRateKg
         m.split = data.split
     }
@@ -168,7 +171,7 @@ final class PickleStore: ObservableObject {
         return true
     }
 
-    /// All diary days, newest first — used by export.
+    /// All diary days, newest first, used by export.
     func allDiaryDays() -> [DiaryDay] {
         let entries = (try? context.fetch(FetchDescriptor<LogEntry>(sortBy: [SortDescriptor(\.loggedAt)]))) ?? []
         let grouped = Dictionary(grouping: entries.map(LoggedFood.init), by: \.localDay)
@@ -258,6 +261,64 @@ final class PickleStore: ObservableObject {
             sortBy: [SortDescriptor(\.name)]
         )
         return ((try? context.fetch(descriptor)) ?? []).map(SavedFood.init)
+    }
+
+    /// Reconstruct a food definition from a canonicalID (e.g. to open a logged item's detail).
+    func foodCandidate(forCanonicalID cid: String) -> FoodCandidate? {
+        let descriptor = FetchDescriptor<FoodItemEntry>(predicate: #Predicate { $0.canonicalID == cid })
+        return (try? context.fetch(descriptor).first)?.candidate()
+    }
+
+    // MARK: - Loved meals (saved combinations)
+
+    /// Save a combination of logged items (e.g. a whole meal section) as a reusable loved meal.
+    func saveLovedMeal(name: String, from entries: [LoggedFood]) {
+        let meal = LovedMeal()
+        meal.name = name.trimmingCharacters(in: .whitespaces)
+        meal.items = entries.map { e in
+            let it = LovedMealItem()
+            it.foodCanonicalID = e.canonicalID
+            it.name = e.name
+            it.amount = e.amount
+            it.unit = e.unit
+            it.kcal = e.macros.kcal
+            it.proteinG = e.macros.proteinG
+            it.carbsG = e.macros.carbsG
+            it.fatG = e.macros.fatG
+            return it
+        }
+        context.insert(meal)
+        try? context.save()
+        bump()
+    }
+
+    func lovedMeals() -> [LovedMealDTO] {
+        let descriptor = FetchDescriptor<LovedMeal>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)])
+        return ((try? context.fetch(descriptor)) ?? []).map(LovedMealDTO.init)
+    }
+
+    func deleteLovedMeal(id: UUID) {
+        let descriptor = FetchDescriptor<LovedMeal>(predicate: #Predicate { $0.id == id })
+        if let m = try? context.fetch(descriptor).first {
+            context.delete(m)
+            try? context.save()
+            bump()
+        }
+    }
+
+    /// Re-log every item of a loved meal into the given slot.
+    func logLovedMeal(id: UUID, into slot: MealSlot) {
+        let descriptor = FetchDescriptor<LovedMeal>(predicate: #Predicate { $0.id == id })
+        guard let m = try? context.fetch(descriptor).first else { return }
+        for it in (m.items ?? []) {
+            let candidate = foodCandidate(forCanonicalID: it.foodCanonicalID)
+                ?? FoodCandidate(name: it.name, brand: nil, source: .custom, sourceID: it.foodCanonicalID,
+                                 barcode: nil,
+                                 nutrition: FoodNutrition(kcalPer100: 0, proteinPer100: 0,
+                                                          carbsPer100: 0, fatPer100: 0, servingGrams: nil))
+            _ = log(candidate, amount: it.amount, unit: it.unit, meal: slot, macros: it.macros)
+        }
+        bump()
     }
 
     func toggleFavorite(canonicalID: String) {

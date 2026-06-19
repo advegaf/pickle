@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The onboarding coordinator. Collects a `ProfileData` draft across light, one-thing-per-
-/// screen steps, computes the plan, then writes it through the store. No accounts — this is
+/// screen steps, computes the plan, then writes it through the store. No accounts, this is
 /// local profile setup wearing the Equinox onboarding's clothes.
 struct OnboardingFlow: View {
     @EnvironmentObject private var store: PickleStore
@@ -19,9 +19,9 @@ struct OnboardingFlow: View {
     }
 
     // Steps that show the slim progress bar + back affordance (the data-collection middle).
-    private let firstFormStep = 2
-    private let lastFormStep = 7
-    private let buildingStep = 8
+    private let firstFormStep = 3
+    private let lastFormStep = 8
+    private let buildingStep = 9
 
     var body: some View {
         ZStack {
@@ -45,8 +45,7 @@ struct OnboardingFlow: View {
     private var topBar: some View {
         HStack(spacing: Spacing.m) {
             Button { back() } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 17, weight: .medium))
+                PickleIcon(.chevronLeft, size: 17)
                     .foregroundStyle(Palette.primary)
                     .frame(width: 44, height: 44)
             }
@@ -69,12 +68,13 @@ struct OnboardingFlow: View {
         switch step {
         case 0: HeroStep { advance() }
         case 1: PrivacyStep { advance() }
-        case 2: NameStep(name: $draft.name) { advance() }
-        case 3: BodyStatsStep(draft: $draft, imperial: $heightImperial) { advance() }
-        case 4: GoalStep(draft: $draft) { advance() }
-        case 5: ActivityStep(activity: $draft.activity) { advance() }
-        case 6: SplitStep(split: $draft.split) { advance() }
-        case 7: ReviewStep(draft: draft) { advance() }
+        case 2: HealthConnectStep(draft: $draft) { advance() }
+        case 3: NameStep(name: $draft.name) { advance() }
+        case 4: BodyStatsStep(draft: $draft, imperial: $heightImperial) { advance() }
+        case 5: GoalStep(draft: $draft) { advance() }
+        case 6: ActivityStep(activity: $draft.activity) { advance() }
+        case 7: SplitStep(split: $draft.split) { advance() }
+        case 8: ReviewStep(draft: draft) { advance() }
         default: BuildingStep(name: draft.name, onFinished: finish)
         }
     }

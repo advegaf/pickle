@@ -1,9 +1,10 @@
 import SwiftUI
+import UIKit
 
-// MARK: - Image placeholder (real duotone treatment lands in Phase 15)
+// MARK: - Imagery
 
-/// Stand-in for treated photography. A dark vertical gradient with a faint grain feel,
-/// plus the subtle 1px white outline that gives images consistent depth on black.
+/// Stand-in for treated photography. A dark vertical gradient, plus the subtle 1px white
+/// outline that gives images consistent depth on black.
 struct DuotonePlaceholder: View {
     var seed: Int = 0
 
@@ -21,7 +22,38 @@ struct DuotonePlaceholder: View {
     }
 }
 
-/// 1px low-opacity outline for any image edge (pure white at 10% on dark — never tinted).
+/// Loads a bundled photo by asset name and applies one consistent in-app duotone treatment
+/// (desaturate, lift contrast, deepen toward black). Falls back to the gradient placeholder
+/// when the asset is missing, so generated images can be dropped in by name one at a time.
+/// See Resources/ImagePrompts.md for the asset names.
+struct TreatedImage: View {
+    var asset: String?
+    var seed: Int = 0
+
+    var body: some View {
+        if let asset, UIImage(named: asset) != nil {
+            // Color.clear pins the layout size to the container; the image rides in an
+            // overlay so scaledToFill can fill and overflow without ballooning the frame.
+            // Without this, a portrait source in a short, wide card reports an oversized
+            // height and pushes any bottom-aligned overlay (the card title) past the clip.
+            Color.clear
+                .overlay(
+                    Image(asset)
+                        .resizable()
+                        .scaledToFill()
+                )
+                .grayscale(1)
+                .contrast(1.08)
+                .brightness(-0.04)
+                .overlay(Color.black.opacity(0.18))
+                .clipped()
+        } else {
+            DuotonePlaceholder(seed: seed)
+        }
+    }
+}
+
+/// 1px low-opacity outline for any image edge (pure white at 10% on dark, never tinted).
 struct ImageOutline: ViewModifier {
     var radius: CGFloat = Radius.card
     func body(content: Content) -> some View {
@@ -66,7 +98,7 @@ struct DailyFuelCard: View {
             Divider().overlay(Palette.hairline)
 
             HStack {
-                Text(hasData ? "\(consumed) / \(target) kcal" : "— / \(target) kcal")
+                Text(hasData ? "\(consumed) / \(target) cal" : "0 / \(target) cal")
                     .font(PickleFont.caption())
                     .foregroundStyle(Palette.secondary)
                     .monospacedDigit()
@@ -103,8 +135,7 @@ struct MilestoneBanner: View {
                         Text("View")
                             .font(PickleFont.button(14))
                             .underline()
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: 12, weight: .medium))
+                        PickleIcon(.arrowRight, size: 12)
                     }
                     .foregroundStyle(Palette.primary)
                     .frame(minHeight: 44, alignment: .leading)
@@ -123,13 +154,22 @@ struct PhotoCard: View {
     var subtitle: String? = nil
     var eyebrow: String? = nil
     var seed: Int = 0
+    var asset: String? = nil
     var height: CGFloat = 200
     var action: () -> Void = {}
+
+    // Deliberate, Apple-quality spacing. The rotated eyebrow lives in a fixed narrow left
+    // gutter; the title block is inset past it so the optical left margin reads even on
+    // every card size and the two never crowd.
+    private let contentMargin: CGFloat = 16   // base inset from the card edge
+    private let eyebrowInset: CGFloat = 16    // gutter distance from the leading edge
+    private let glyphColumn: CGFloat = 16     // narrow layout column for the rotated label
+    private let titleLeading: CGFloat = 42    // title leading when an eyebrow is present
 
     var body: some View {
         Button(action: action) {
             ZStack(alignment: .bottomLeading) {
-                DuotonePlaceholder(seed: seed)
+                TreatedImage(asset: asset, seed: seed)
                 LinearGradient(
                     colors: [.clear, .black.opacity(0.85)],
                     startPoint: .center, endPoint: .bottom
@@ -138,12 +178,12 @@ struct PhotoCard: View {
                     Text(eyebrow.uppercased())
                         .font(PickleFont.eyebrow(10))
                         .tracking(2)
-                        .foregroundStyle(Palette.primary.opacity(0.9))
-                        .rotationEffect(.degrees(-90))
+                        .foregroundStyle(Palette.primary.opacity(0.85))
                         .fixedSize()
-                        .frame(width: 16)
+                        .rotationEffect(.degrees(-90))
+                        .frame(width: glyphColumn)
                         .frame(maxHeight: .infinity, alignment: .center)
-                        .padding(.leading, Spacing.s)
+                        .padding(.leading, eyebrowInset)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 VStack(alignment: .leading, spacing: 4) {
@@ -157,9 +197,10 @@ struct PhotoCard: View {
                             .foregroundStyle(Palette.secondary)
                     }
                 }
-                .padding(Spacing.m)
-                // Clear the rotated eyebrow on the left edge.
-                .padding(.leading, eyebrow != nil ? Spacing.l : 0)
+                .padding(.top, contentMargin)
+                .padding(.bottom, contentMargin)
+                .padding(.trailing, contentMargin)
+                .padding(.leading, eyebrow != nil ? titleLeading : contentMargin)
             }
             .frame(height: height)
             .frame(maxWidth: .infinity)
@@ -172,70 +213,55 @@ struct PhotoCard: View {
     }
 }
 
-// MARK: - Image row (More tab)
+// MARK: - Grouped list (More tab, Home quick links)
 
-struct ImageRow: View {
+/// Leading inset for a row's label past its icon column (horizontal pad + icon width + spacing).
+private let listRowLabelInset = Spacing.l + 24 + Spacing.m
+
+/// One navigational row: a thin tinted icon, a label, and a chevron. Group several inside a
+/// `GroupedListCard`. Premium and photo-free, the clean alternative to the old image rows.
+struct ListRow: View {
+    let icon: Glyph
     let title: String
-    var seed: Int = 0
-    var action: () -> Void = {}
-
-    var body: some View {
-        Button(action: action) {
-            ZStack(alignment: .leading) {
-                DuotonePlaceholder(seed: seed)
-                LinearGradient(colors: [.black.opacity(0.7), .clear],
-                               startPoint: .leading, endPoint: .trailing)
-                Text(title)
-                    .font(PickleFont.heading(19))
-                    .foregroundStyle(Palette.primary)
-                    .padding(.horizontal, Spacing.l)
-            }
-            .frame(height: 76)
-            .frame(maxWidth: .infinity)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
-            .imageOutline()
-        }
-        .buttonStyle(.pressable)
-        .accessibilityLabel(title)
-    }
-}
-
-// MARK: - Quick link row (thumbnail + label + chevron)
-
-struct QuickLinkRow: View {
-    let title: String
-    var systemImage: String? = nil
-    var seed: Int = 0
     var action: () -> Void = {}
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: Spacing.m) {
-                ZStack {
-                    DuotonePlaceholder(seed: seed)
-                    if let systemImage {
-                        Image(systemName: systemImage)
-                            .font(.system(size: 16, weight: .light))
-                            .foregroundStyle(Palette.primary)
-                    }
-                }
-                .frame(width: 44, height: 44)
-                .clipShape(RoundedRectangle(cornerRadius: Radius.button))
-                .imageOutline(radius: Radius.button)
-
+                PickleIcon(icon, size: 20)
+                    .foregroundStyle(Palette.secondary)
+                    .frame(width: 24)
                 Text(title)
-                    .font(PickleFont.bodyMedium())
+                    .font(PickleFont.bodyMedium(16))
                     .foregroundStyle(Palette.primary)
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .medium))
+                PickleIcon(.chevronRight, size: 13)
                     .foregroundStyle(Palette.tertiary)
             }
+            .padding(.horizontal, Spacing.l)
             .frame(minHeight: 56)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.pressable)
         .accessibilityLabel(title)
         .accessibilityAddTraits(.isButton)
+    }
+}
+
+/// Hairline between grouped rows, inset to align under the label (not the icon), Apple-grade.
+struct ListRowDivider: View {
+    var body: some View {
+        Divider().overlay(Palette.hairline).padding(.leading, listRowLabelInset)
+    }
+}
+
+/// Wraps a stack of `ListRow`s (with `ListRowDivider`s between) in one rounded surface card.
+struct GroupedListCard<Content: View>: View {
+    @ViewBuilder var content: Content
+    var body: some View {
+        VStack(spacing: 0) { content }
+            .background(Palette.surface)
+            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
     }
 }
 
@@ -247,8 +273,11 @@ struct QuickLinkRow: View {
                           mealsLogged: 2, mealsTotal: 4)
             MilestoneBanner(title: "3-day streak", subtitle: "You're building momentum. Keep going.") {}
             PhotoCard(title: "High Protein", subtitle: "24 meals", eyebrow: "Collection", seed: 1)
-            ImageRow(title: "Club Locations", seed: 2)
-            QuickLinkRow(title: "Favorites", systemImage: "heart", seed: 3)
+            GroupedListCard {
+                ListRow(icon: .favorite, title: "Favorites")
+                ListRowDivider()
+                ListRow(icon: .edit, title: "Custom Foods")
+            }
         }
         .padding(Spacing.screen)
     }

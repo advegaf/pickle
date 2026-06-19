@@ -49,7 +49,7 @@ struct DesignSystemGallery: View {
                         HStack {
                             StatBlock(number: "3", label: "Day streak")
                             StatBlock(number: "12", label: "Days logged")
-                            StatBlock(number: "1,980", label: "Avg kcal")
+                            StatBlock(number: "1,980", label: "Avg cal")
                         }
                     }
 
@@ -62,13 +62,11 @@ struct DesignSystemGallery: View {
                         }
                     }
 
-                    group("IMAGE ROW") { ImageRow(title: "Club Locations", seed: 4) }
-
-                    group("QUICK LINKS") {
-                        VStack(spacing: 0) {
-                            QuickLinkRow(title: "Favorites", systemImage: "heart", seed: 5)
-                            Divider().overlay(Palette.hairline)
-                            QuickLinkRow(title: "Custom Foods", systemImage: "square.and.pencil", seed: 6)
+                    group("GROUPED LIST") {
+                        GroupedListCard {
+                            ListRow(icon: .favorite, title: "Favorites")
+                            ListRowDivider()
+                            ListRow(icon: .edit, title: "Custom Foods")
                         }
                     }
 
@@ -83,7 +81,7 @@ struct DesignSystemGallery: View {
                     group("INPUTS") {
                         VStack(spacing: Spacing.xl) {
                             UnderlineField(label: "First name", text: $name)
-                            UtilityStepper(label: "Calories", value: $kcal, step: 10, unit: "kcal")
+                            UtilityStepper(label: "Calories", value: $kcal, step: 10, unit: "cal")
                             VStack(alignment: .leading, spacing: Spacing.s) {
                                 ValidationRow(text: "One number", satisfied: true)
                                 ValidationRow(text: "8 characters minimum", satisfied: false)

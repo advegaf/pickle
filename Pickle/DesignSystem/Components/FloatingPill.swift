@@ -4,14 +4,13 @@ import SwiftUI
 /// sits bottom-right with a soft layered shadow so it floats above scrolling content.
 struct FloatingPill: View {
     var title: String = "Log"
-    var systemImage: String = "plus"
+    var icon: Glyph = .add
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 7) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 15, weight: .semibold))
+                PickleIcon(icon, size: 15)
                 Text(title)
                     .font(PickleFont.button(15))
             }
