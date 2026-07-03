@@ -22,7 +22,8 @@ extension ButtonStyle where Self == PressableButtonStyle {
 
 // MARK: - Primary / Secondary / Text
 
-/// White-filled rectangle. One per screen, the single most important action.
+/// White pill, one per screen, the single most important action. Text in `onAccent`
+/// (near-black green) so the pill reads as part of the Glow family, not a stark cutout.
 struct PrimaryButton: View {
     let title: String
     var enabled: Bool = true
@@ -32,10 +33,10 @@ struct PrimaryButton: View {
         Button(action: action) {
             Text(title)
                 .font(PickleFont.button())
-                .foregroundStyle(Palette.background)
+                .foregroundStyle(Palette.onAccent)
                 .frame(maxWidth: .infinity, minHeight: 52)
-                .background(Palette.primary.opacity(enabled ? 1 : 0.4))
-                .clipShape(RoundedRectangle(cornerRadius: Radius.button))
+                .background(Color.white.opacity(enabled ? 1 : 0.4))
+                .clipShape(Capsule())
         }
         .buttonStyle(.pressable)
         .disabled(!enabled)
@@ -43,7 +44,7 @@ struct PrimaryButton: View {
     }
 }
 
-/// 1px-outlined rectangle, secondary action.
+/// Glass pill, secondary action: surface fill with the glass top-edge highlight.
 struct SecondaryButton: View {
     let title: String
     let action: () -> Void
@@ -54,9 +55,14 @@ struct SecondaryButton: View {
                 .font(PickleFont.button())
                 .foregroundStyle(Palette.primary)
                 .frame(maxWidth: .infinity, minHeight: 52)
+                .background(Palette.surface)
+                .clipShape(Capsule())
                 .overlay(
-                    RoundedRectangle(cornerRadius: Radius.button)
-                        .stroke(Palette.primary.opacity(0.5), lineWidth: Hairline.width)
+                    Capsule().strokeBorder(
+                        LinearGradient(colors: [.white.opacity(0.12), .white.opacity(0.03)],
+                                       startPoint: .top, endPoint: .bottom),
+                        lineWidth: 1
+                    )
                 )
         }
         .buttonStyle(.pressable)
@@ -72,7 +78,7 @@ struct TextLink: View {
         Button(action: action) {
             Text(title)
                 .font(PickleFont.button(14))
-                .foregroundStyle(Palette.primary)
+                .foregroundStyle(Palette.accent)
                 .underline()
                 .frame(minHeight: 44) // hit area
         }

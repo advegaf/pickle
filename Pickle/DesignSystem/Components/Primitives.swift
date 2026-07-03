@@ -1,21 +1,32 @@
 import SwiftUI
 
-// MARK: - Eyebrow
+// MARK: - Section label
 
-/// ALL-CAPS wide-tracked micro label. At accessibility text sizes the tracking is
-/// reduced so it doesn't overflow. Decorative vertical variant used only on photo cards.
-struct Eyebrow: View {
+/// Sentence-case section label, the Glow replacement for the old ALL-CAPS eyebrow.
+struct SectionLabel: View {
     let text: String
-    var color: Color = Palette.tertiary
-    @Environment(\.dynamicTypeSize) private var typeSize
+    var color: Color = Palette.secondary
 
     var body: some View {
-        Text(text.uppercased())
-            .font(PickleFont.eyebrow())
-            .tracking(typeSize.isAccessibilitySize ? 1 : 2.5)
+        Text(sentenceCased(text))
+            .font(PickleFont.label())
             .foregroundStyle(color)
             .accessibilityLabel(text)
     }
+
+    /// Call sites historically passed shouting strings ("TODAY'S MEALS"); normalize any
+    /// all-caps input to sentence case so no screen shouts during the migration.
+    private func sentenceCased(_ s: String) -> String {
+        guard s == s.uppercased(), s.count > 1 else { return s }
+        return s.prefix(1).uppercased() + s.dropFirst().lowercased()
+    }
+}
+
+/// Transitional alias while call sites migrate to `SectionLabel` (removed in polish).
+struct Eyebrow: View {
+    let text: String
+    var color: Color = Palette.secondary
+    var body: some View { SectionLabel(text: text, color: color) }
 }
 
 // MARK: - Section header
@@ -71,7 +82,7 @@ struct DotLoader: View {
             if reduceMotion {
                 HStack(spacing: 8) {
                     ForEach(0..<4, id: \.self) { i in
-                        Circle().fill(Palette.primary)
+                        Circle().fill(Palette.accent)
                             .frame(width: dot, height: dot)
                             .opacity(done && i != 0 ? 0 : 1)
                     }
@@ -84,7 +95,7 @@ struct DotLoader: View {
                 ZStack {
                     ForEach(0..<4, id: \.self) { i in
                         Circle()
-                            .fill(Palette.primary)
+                            .fill(Palette.accent)
                             .frame(width: dot, height: dot)
                             .scaleEffect(done && i == 0 ? 1.3 : 1)
                             .opacity(done && i != 0 ? 0 : 1)
@@ -118,8 +129,7 @@ struct CategoryButton: View {
                 .font(PickleFont.bodyMedium(15))
                 .foregroundStyle(Palette.primary)
                 .frame(maxWidth: .infinity, minHeight: 56)
-                .background(Palette.surface)
-                .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+                .glassCard(radius: Radius.button)
         }
         .buttonStyle(.pressable)
     }

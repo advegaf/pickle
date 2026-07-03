@@ -103,13 +103,10 @@ struct DesignSystemGallery: View {
 
             VStack {
                 Spacer()
-                PickleTabBar(items: PickleTabItem.pickleTabs, selection: $tab)
+                FloatingTabBar(items: PickleTabItem.pickleTabs, selection: $tab) {}
+                    .padding(.horizontal, Spacing.screen + 4)
+                    .padding(.bottom, Spacing.s)
             }
-
-            FloatingPill { }
-                .padding(.trailing, Spacing.l)
-                .padding(.bottom, 92)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         }
     }
 

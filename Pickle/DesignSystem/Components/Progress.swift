@@ -33,7 +33,7 @@ struct KcalRing: View {
             Circle()
                 .trim(from: 0, to: hasData ? fraction : 0)
                 .stroke(
-                    over > 0 ? Palette.over : Palette.primary,
+                    over > 0 ? Palette.over : Palette.accent,
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
@@ -74,7 +74,7 @@ struct MacroBar: View {
     let short: String          // "P"
     let value: Int             // grams consumed
     let target: Int            // grams target
-    var tint: Color = Palette.primary
+    var tint: Color = Palette.accent
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -132,7 +132,7 @@ struct MacroLine: View {
     }
 
     private func macro(_ letter: String, _ grams: Int, _ tint: Color) -> Text {
-        Text(letter).foregroundColor(tint) + Text(" \(grams)").foregroundColor(Palette.secondary)
+        Text("\(Text(letter).foregroundColor(tint))\(Text(" \(grams)").foregroundColor(Palette.secondary))")
     }
 }
 
@@ -147,7 +147,7 @@ struct MealDots: View {
         HStack(spacing: 6) {
             ForEach(0..<total, id: \.self) { i in
                 Circle()
-                    .fill(i < logged ? Palette.primary : Palette.faint.opacity(0.5))
+                    .fill(i < logged ? Palette.accent : Palette.faint.opacity(0.5))
                     .frame(width: 6, height: 6)
             }
         }

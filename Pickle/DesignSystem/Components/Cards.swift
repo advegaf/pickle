@@ -1,6 +1,38 @@
 import SwiftUI
 import UIKit
 
+// MARK: - Glass card
+
+/// The Glow surface recipe, applied ~15x across the app: flat `surface` fill, a 1px
+/// top-edge highlight that fades at the sides, and ONE ambient shadow. Deliberately no
+/// Material: cards are glass-LOOK; only the floating bar and sheets get real glass.
+struct GlassCard: ViewModifier {
+    var radius: CGFloat = Radius.card
+
+    func body(content: Content) -> some View {
+        content
+            .background(Palette.surface)
+            .clipShape(RoundedRectangle(cornerRadius: radius))
+            .overlay(
+                RoundedRectangle(cornerRadius: radius)
+                    .strokeBorder(
+                        LinearGradient(colors: [.white.opacity(0.10), .white.opacity(0.02)],
+                                       startPoint: .top, endPoint: .bottom),
+                        lineWidth: 1
+                    )
+            )
+            .shadow(color: .black.opacity(0.35), radius: 24, y: 8)
+    }
+}
+
+extension View {
+    /// The one card surface. Pass a smaller radius for compact cards (concentric rule:
+    /// outer = inner + padding).
+    func glassCard(radius: CGFloat = Radius.card) -> some View {
+        modifier(GlassCard(radius: radius))
+    }
+}
+
 // MARK: - Imagery
 
 /// Stand-in for treated photography. A dark vertical gradient, plus the subtle 1px white
@@ -42,10 +74,7 @@ struct TreatedImage: View {
                         .resizable()
                         .scaledToFill()
                 )
-                .grayscale(1)
-                .contrast(1.08)
-                .brightness(-0.04)
-                .overlay(Color.black.opacity(0.18))
+                .overlay(Color.black.opacity(0.10))
                 .clipped()
         } else {
             DuotonePlaceholder(seed: seed)

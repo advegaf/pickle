@@ -66,9 +66,6 @@ struct HomeView: View {
                 .padding(.bottom, 140)
             }
 
-            FloatingPill(action: onLog)
-                .padding(.trailing, Spacing.l)
-                .padding(.bottom, 96)
         }
         .sheet(item: $mealDetail) { meal in
             MealDetailView(meal: meal, localDay: store.todayKey())
