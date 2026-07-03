@@ -9,12 +9,14 @@ import SwiftUI
 /// and the global tab-bar Log button always belong to today.
 struct HomeView: View {
     @EnvironmentObject private var store: PickleStore
+    @EnvironmentObject private var reminders: ReminderService
     var onLog: () -> Void = {}
     /// Log into a meal slot; `day` nil means today, otherwise an explicit backfill day.
     var onLogMeal: (MealSlot, String?) -> Void = { _, _ in }
     @State private var mealDetail: MealSlot?
     @State private var quickSheet: QuickSheet?
     @State private var showProfile = false
+    @State private var showReminders = false
     /// The day the screen is showing. Empty until first appear, then always a valid key.
     @State private var selectedDay = ""
     /// Cached kcal-per-day for the strip, refreshed per store revision.
@@ -25,6 +27,8 @@ struct HomeView: View {
     @State private var predictedRoute: PredictedRoute?
     /// Detects midnight rollover across foreground/day-change events.
     @State private var lastKnownToday = ""
+    /// Entries across the 28-day window + today (gates the one-time reminder prompt).
+    @State private var historyEntryCount = 0
     @Environment(\.scenePhase) private var scenePhase
 
     private struct PredictedRoute: Identifiable {
@@ -84,6 +88,12 @@ struct HomeView: View {
                         .pickleEntrance(index: 4)
                     }
 
+                    // One-time reminder opt-in after the third log ever: the retention
+                    // lever needs an adoption moment, not just a bell.
+                    if reminders.shouldOfferPrompt, historyEntryCount >= 3 {
+                        reminderPrompt.pickleEntrance(index: 4)
+                    }
+
                     mealsSection.pickleEntrance(index: 4)
                     quickLinks.pickleEntrance(index: 5)
                 }
@@ -128,8 +138,11 @@ struct HomeView: View {
 
     private func refreshDayKcal() {
         dayKcal = store.dailyKcal()
-        prediction = PredictedMealEngine.predict(history: store.recentDays(back: 28),
+        let history = store.recentDays(back: 28)
+        prediction = PredictedMealEngine.predict(history: history,
                                                  today: store.diaryDay(today))
+        historyEntryCount = history.reduce(0) { $0 + $1.entries.count }
+            + store.diaryDay(today).entries.count
     }
 
     // MARK: Header
@@ -154,6 +167,10 @@ struct HomeView: View {
 
             StreakChip(streak: streak)
 
+            BellChip(missed: reminders.missedCount(today: store.diaryDay(today), todayKey: today)) {
+                showReminders = true
+            }
+
             Button(action: onLog) {
                 PickleIcon(.search, size: 17)
                     .foregroundStyle(Palette.secondary)
@@ -167,6 +184,10 @@ struct HomeView: View {
             .accessibilityLabel("Search foods")
         }
         .sheet(isPresented: $showProfile) { ProfileView().environmentObject(store) }
+        .sheet(isPresented: $showReminders) {
+            RemindersSheet()
+                .environmentObject(reminders)
+        }
     }
 
     private var greetingBlock: some View {
@@ -201,6 +222,45 @@ struct HomeView: View {
                 }
             }
         }
+    }
+
+    private var reminderPrompt: some View {
+        HStack(spacing: Spacing.l) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Want a nudge at meal times?")
+                    .font(PickleFont.bodyMedium(15))
+                    .foregroundStyle(Palette.primary)
+                Text("A quiet reminder keeps the streak alive.")
+                    .font(PickleFont.caption(12))
+                    .foregroundStyle(Palette.secondary)
+            }
+            Spacer()
+            Button {
+                reminders.markPromptShown()
+                showReminders = true
+            } label: {
+                Text("Set up")
+                    .font(PickleFont.button(14))
+                    .foregroundStyle(Palette.onAccent)
+                    .padding(.horizontal, Spacing.l)
+                    .frame(height: 36)
+                    .background(Palette.accent)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.pressable)
+            Button {
+                reminders.markPromptShown()
+            } label: {
+                PickleIcon(.close, size: 12)
+                    .foregroundStyle(Palette.tertiary)
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.pressable)
+            .accessibilityLabel("Dismiss reminder suggestion")
+        }
+        .padding(Spacing.l)
+        .frame(maxWidth: .infinity)
+        .glassCard(radius: 20)
     }
 
     private var quickLinks: some View {

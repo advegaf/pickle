@@ -235,6 +235,9 @@ struct FoodDetailView: View {
         } else {
             store.log(candidate, amount: amount, unit: unit, meal: meal, macros: macros,
                       at: logDate ?? Date())
+            ReminderService.shared.noteLogged(meal: meal,
+                                              day: DayKey.localDay(for: logDate ?? Date()),
+                                              todayKey: DayKey.localDay(for: Date()))
         }
         Haptics.logAdded()
         onAdded()

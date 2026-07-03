@@ -216,9 +216,16 @@ struct AILogView: View {
     }
 
     private func addAll() {
+        var loggedAny = false
         for item in items where !item.needsReview {
             store.log(item.candidate(), amount: 1, unit: .serving, meal: meal, macros: item.macros,
                       at: logDate ?? Date())
+            loggedAny = true
+        }
+        if loggedAny {
+            ReminderService.shared.noteLogged(meal: meal,
+                                              day: DayKey.localDay(for: logDate ?? Date()),
+                                              todayKey: DayKey.localDay(for: Date()))
         }
         Haptics.celebrate()
         onConfirm()

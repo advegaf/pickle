@@ -12,6 +12,8 @@ struct LogSheet: View {
 
     @State private var mode: Mode
     @State private var path: [Route] = []
+    /// North-star instrumentation: sheet open -> saved entry, recorded on finish.
+    @State private var openedAt = Date()
 
     init(presetMeal: MealSlot = .current, prefillQuery: String = "", logDay: String? = nil) {
         self.presetMeal = presetMeal
@@ -112,7 +114,10 @@ struct LogSheet: View {
         }
     }
 
-    private func finish() { dismiss() }
+    private func finish() {
+        LogMetric.record(from: openedAt)
+        dismiss()
+    }
 }
 
 /// Recently logged foods, newest first, for one-tap re-logging (the fastest path to a log).

@@ -45,6 +45,13 @@ struct MainTabView: View {
                 logRequest = LogRequest(meal: .current)
             }
         }
+        .onReceive(ReminderService.shared.$tappedMeal) { meal in
+            // A tapped reminder lands on the Log sheet, preset to its meal.
+            guard let meal else { return }
+            selection = 0
+            logRequest = LogRequest(meal: meal)
+            ReminderService.shared.tappedMeal = nil
+        }
         .task {
             #if DEBUG
             if let t = LaunchOptions.tab { selection = t }

@@ -66,6 +66,9 @@ struct QuickAddView: View {
                                      carbsPer100: Double(carbs), fatPer100: Double(fat), servingGrams: 100))
         store.log(candidate, amount: 1, unit: .serving, meal: meal, macros: macros,
                   at: logDate ?? Date())
+        ReminderService.shared.noteLogged(meal: meal,
+                                          day: DayKey.localDay(for: logDate ?? Date()),
+                                          todayKey: DayKey.localDay(for: Date()))
         Haptics.logAdded()
         onAdded()
     }

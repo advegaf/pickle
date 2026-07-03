@@ -240,6 +240,13 @@ struct AboutView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Version 0.1.0")
                     Text("Icons by Hugeicons")
+                    #if DEBUG
+                    // The north-star metric, visible where only builders look.
+                    if let median = LogMetric.median {
+                        Text("Median seconds-to-log: \(String(format: "%.1f", median))s over \(LogMetric.sampleCount) logs")
+                            .monospacedDigit()
+                    }
+                    #endif
                 }
                 .font(PickleFont.caption()).foregroundStyle(Palette.faint)
                 .padding(.top, Spacing.l)
@@ -250,6 +257,8 @@ struct AboutView: View {
             Button("Cancel", role: .cancel) {}
             Button("Delete everything", role: .destructive) {
                 store.deleteAllData()
+                ReminderService.shared.resetAll()
+                LogMetric.reset()
                 Haptics.confirm()
                 dismiss()
             }

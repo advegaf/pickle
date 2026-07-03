@@ -29,12 +29,44 @@ struct StreakChip: View {
     }
 }
 
+/// The Home header bell. The red dot means a reminder fired today for a meal that is
+/// still unlogged; it clears by logging (or at day rollover), not by opening the sheet.
+struct BellChip: View {
+    let missed: Int
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "bell")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Palette.secondary)
+                .frame(width: 36, height: 36)
+                .background(Palette.surface)
+                .clipShape(Circle())
+                .overlay(Circle().strokeBorder(Palette.glassEdge, lineWidth: 1))
+                .overlay(alignment: .topTrailing) {
+                    if missed > 0 {
+                        Circle()
+                            .fill(Palette.over)
+                            .frame(width: 8, height: 8)
+                            .offset(x: -2, y: 2)
+                    }
+                }
+        }
+        .buttonStyle(.pressable)
+        .frame(width: 44, height: 44)
+        .accessibilityLabel(missed > 0 ? "Reminders, \(missed) missed" : "Reminders, none missed")
+    }
+}
+
 #Preview {
     ZStack {
         Palette.background.ignoresSafeArea()
         HStack {
             StreakChip(streak: 13)
             StreakChip(streak: 0)
+            BellChip(missed: 2) {}
+            BellChip(missed: 0) {}
         }
     }
 }
