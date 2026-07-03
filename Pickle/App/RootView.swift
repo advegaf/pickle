@@ -14,18 +14,38 @@ struct RootView: View {
             if showSplash {
                 SplashView()
                     .transition(.opacity)
-            } else if onboarded {
-                MainTabView()
             } else {
-                OnboardingFlow(onComplete: { withAnimation(Motion.easeOut) { onboarded = true } })
+                #if DEBUG
+                if LaunchOptions.open == "widgets" {
+                    WidgetGallery(snapshot: store.currentSnapshot())
+                } else {
+                    gatedContent
+                }
+                #else
+                gatedContent
+                #endif
             }
         }
         .scrollIndicators(.hidden)
         .task {
             applyLaunchOptions()
+            store.refreshWidgetSnapshot()   // ensure the App-Group snapshot exists for the widget gallery
             onboarded = store.hasCompletedOnboarding
             try? await Task.sleep(for: .milliseconds(LaunchOptions.onboardStep != nil ? 200 : 1100))
             withAnimation(.easeOut(duration: 0.4)) { showSplash = false }
+        }
+        // Re-evaluate the gate when the store mutates, so "Delete all my data" (which removes the
+        // profile) returns the app to onboarding.
+        .onChange(of: store.revision) { _, _ in
+            onboarded = store.hasCompletedOnboarding
+        }
+    }
+
+    @ViewBuilder private var gatedContent: some View {
+        if onboarded {
+            MainTabView()
+        } else {
+            OnboardingFlow(onComplete: { withAnimation(Motion.easeOut) { onboarded = true } })
         }
     }
 

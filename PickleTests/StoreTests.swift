@@ -35,6 +35,52 @@ final class StoreTests: XCTestCase {
         XCTAssertTrue(store.today().isEmpty)
     }
 
+    func testUpdateLog_editsInPlace_keepsCount_updatesMacrosAndMeal() {
+        let store = makeStore()
+        let cand = sampleCandidate()
+        store.log(cand, amount: 1, unit: .serving, meal: .lunch, macros: cand.nutrition.macros(forGrams: 118))
+        let entry = store.today().entries.first!
+        XCTAssertEqual(store.today().entries.count, 1)
+
+        // Edit it to a 2-serving portion moved to dinner.
+        let newMacros = cand.nutrition.macros(forGrams: 236)
+        store.updateLog(id: entry.id, amount: 2, unit: .serving, meal: .dinner, macros: newMacros)
+
+        let today = store.today()
+        XCTAssertEqual(today.entries.count, 1)                 // edited, not duplicated
+        let edited = today.entries.first!
+        XCTAssertEqual(edited.meal, .dinner)
+        XCTAssertEqual(edited.amount, 2)
+        XCTAssertEqual(edited.macros.kcal, newMacros.kcal)
+        XCTAssertEqual(today.kcal(for: .lunch), 0)            // moved off lunch
+        XCTAssertEqual(today.kcal(for: .dinner), newMacros.kcal)
+    }
+
+    func testDeleteAllData_wipesEverything_andResetsOnboarding() {
+        let store = makeStore()
+        var data = ProfileData()
+        data.name = "Alex"; data.sex = .male; data.age = 28; data.heightCm = 178; data.weightKg = 82
+        data.activity = .active; data.goal = .lose; data.weeklyRateKg = 0.5; data.split = .highProtein
+        store.completeOnboarding(data)
+
+        let cand = sampleCandidate("Yogurt", barcode: "y")
+        store.log(cand, amount: 1, unit: .serving, meal: .breakfast, macros: cand.nutrition.macros(forGrams: 170))
+        store.upsertFood(from: cand)
+        store.toggleFavorite(canonicalID: cand.canonicalID)
+        store.addWeight(kg: 81.5)
+        XCTAssertTrue(store.hasCompletedOnboarding)
+        XCTAssertFalse(store.today().isEmpty)
+        XCTAssertFalse(store.favorites().isEmpty)
+
+        store.deleteAllData()
+
+        XCTAssertFalse(store.hasCompletedOnboarding)   // no profile -> back to onboarding
+        XCTAssertTrue(store.today().isEmpty)
+        XCTAssertTrue(store.favorites().isEmpty)
+        XCTAssertTrue(store.lovedMeals().isEmpty)
+        XCTAssertTrue(store.recents().isEmpty)
+    }
+
     func testRecents_reflectLoggedFoods() {
         let store = makeStore()
         store.log(sampleCandidate("Apple", barcode: "a"), amount: 1, unit: .serving,

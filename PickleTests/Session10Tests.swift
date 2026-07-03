@@ -91,6 +91,19 @@ final class Session10Tests: XCTestCase {
         XCTAssertEqual(store.coachingSummary().loggedDays, 1)
     }
 
+    func testCoachingSummary_framesByTenure_notFixedWindow() {
+        // A brand-new user who logged once today has been "tracking" for 1 day, so the summary
+        // must say "1 of 1", never "1 of 14" (which reads as falling short of a window they
+        // never had). effectiveWindow == min(windowDays, daysSinceStart) == min(14, 1) == 1.
+        let store = onboardedStore()
+        store.log(candidate("Eggs"), amount: 1, unit: .serving, meal: .breakfast,
+                  macros: MacroTargets(kcal: 140, proteinG: 12, carbsG: 1, fatG: 10))
+        let text = store.coachingSummary().text
+        XCTAssertTrue(text.contains("tracking for 1 day"), text)
+        XCTAssertTrue(text.contains("logged 1 of 1"), text)
+        XCTAssertFalse(text.contains("of 14"), "should not frame a new user against the full 14-day window")
+    }
+
     // MARK: Loved meals
 
     func testLovedMeal_saveThenRelog_roundTrips() {

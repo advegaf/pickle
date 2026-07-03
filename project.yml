@@ -48,8 +48,6 @@ targets:
         ITSAppUsesNonExemptEncryption: NO
         PickleProxyURL: $(PICKLE_PROXY_URL)
         PickleAnthropicKey: $(ANTHROPIC_API_KEY)
-        UIBackgroundModes:
-          - remote-notification
     entitlements:
       path: Pickle/Pickle.entitlements
       properties:

@@ -41,6 +41,8 @@ enum DemoSeed {
         for l in (try? ctx.fetch(FetchDescriptor<LogEntry>())) ?? [] { ctx.delete(l) }
         for w in (try? ctx.fetch(FetchDescriptor<WeightEntry>())) ?? [] { ctx.delete(w) }
         for s in (try? ctx.fetch(FetchDescriptor<PlanSnapshot>())) ?? [] { ctx.delete(s) }
+        for m in (try? ctx.fetch(FetchDescriptor<LovedMeal>())) ?? [] { ctx.delete(m) }
+        for i in (try? ctx.fetch(FetchDescriptor<LovedMealItem>())) ?? [] { ctx.delete(i) }
         try? ctx.save()
     }
 
@@ -116,6 +118,16 @@ enum DemoSeed {
                 store.addWeight(kg: 82.0 - Double(13 - offset) * 0.035, at: date)
             }
         }
+
+        // A sample loved meal, so the Loved Meals list and the re-log meal picker are populated.
+        let bowl = today.prefix(2).map { item -> LoggedFood in
+            let cand = candidate(item).0
+            return LoggedFood(id: UUID(), loggedAt: Date(), localDay: store.todayKey(),
+                              meal: .breakfast, name: cand.name, brand: cand.brand,
+                              canonicalID: cand.canonicalID, amount: 1, unit: .serving,
+                              macros: cand.nutrition.macros(forGrams: cand.nutrition.servingGrams ?? 100))
+        }
+        store.saveLovedMeal(name: "Breakfast Bowl", from: bowl)
     }
 
     private static func candidate(_ item: (String, String?, FoodNutrition, MealSlot)) -> (FoodCandidate, MealSlot) {

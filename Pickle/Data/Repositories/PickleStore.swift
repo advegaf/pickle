@@ -188,6 +188,38 @@ final class PickleStore: ObservableObject {
         }
     }
 
+    /// Permanently wipe every record on this device (profile, diary, weights, plans, saved foods,
+    /// loved meals). After this the app has no profile, so it returns to onboarding. Irreversible.
+    func deleteAllData() {
+        for p in (try? context.fetch(FetchDescriptor<UserProfile>())) ?? [] { context.delete(p) }
+        for f in (try? context.fetch(FetchDescriptor<FoodItemEntry>())) ?? [] { context.delete(f) }
+        for l in (try? context.fetch(FetchDescriptor<LogEntry>())) ?? [] { context.delete(l) }
+        for w in (try? context.fetch(FetchDescriptor<WeightEntry>())) ?? [] { context.delete(w) }
+        for s in (try? context.fetch(FetchDescriptor<PlanSnapshot>())) ?? [] { context.delete(s) }
+        for m in (try? context.fetch(FetchDescriptor<LovedMeal>())) ?? [] { context.delete(m) }
+        for i in (try? context.fetch(FetchDescriptor<LovedMealItem>())) ?? [] { context.delete(i) }
+        try? context.save()
+        refreshWidgetSnapshot()
+        bump()
+    }
+
+    /// Update an existing logged entry in place (portion / unit / meal / macros), so editing a
+    /// logged item changes it instead of adding a duplicate.
+    func updateLog(id: UUID, amount: Double, unit: ServingUnit, meal: MealSlot, macros: MacroTargets) {
+        let descriptor = FetchDescriptor<LogEntry>(predicate: #Predicate { $0.id == id })
+        guard let entry = try? context.fetch(descriptor).first else { return }
+        entry.amount = amount
+        entry.unit = unit
+        entry.meal = meal
+        entry.kcal = macros.kcal
+        entry.proteinG = macros.proteinG
+        entry.carbsG = macros.carbsG
+        entry.fatG = macros.fatG
+        try? context.save()
+        refreshWidgetSnapshot()
+        bump()
+    }
+
     func loggedDays() -> Set<String> {
         let entries = (try? context.fetch(FetchDescriptor<LogEntry>())) ?? []
         return Set(entries.map(\.localDay).filter { !$0.isEmpty })
@@ -379,18 +411,24 @@ final class PickleStore: ObservableObject {
 
     // MARK: - Widget snapshot
 
-    func refreshWidgetSnapshot() {
+    /// Today's diary distilled into the small value type the widget reads. Exposed so the DEBUG
+    /// widget gallery can render real numbers without depending on the App-Group file (which the
+    /// simulator may not provision).
+    func currentSnapshot() -> DiarySnapshot {
         let day = today()
         let t = profileModel().targets
         let totals = day.totals
-        let snapshot = DiarySnapshot(
+        return DiarySnapshot(
             localDay: day.localDay, updatedAt: Date(),
             consumedKcal: totals.kcal, targetKcal: t.kcal,
             proteinG: totals.proteinG, proteinTarget: t.proteinG,
             carbsG: totals.carbsG, carbsTarget: t.carbsG,
             fatG: totals.fatG, fatTarget: t.fatG,
             mealsLogged: day.loggedMealCount, mealsTotal: MealSlot.allCases.count)
-        DiarySnapshotStore.write(snapshot)
+    }
+
+    func refreshWidgetSnapshot() {
+        DiarySnapshotStore.write(currentSnapshot())
         WidgetReloader.reload()
     }
 }

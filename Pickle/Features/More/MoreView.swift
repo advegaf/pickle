@@ -77,6 +77,17 @@ struct MoreView: View {
             .scrollIndicators(.hidden)
             .presentationBackground(Palette.background)
         }
+        .onAppear {
+            #if DEBUG
+            // `--open more-<route>` auto-presents a destination for the screenshot loop.
+            if let open = LaunchOptions.open, open.hasPrefix("more-"),
+               let r = Route(rawValue: String(open.dropFirst("more-".count))) {
+                route = r
+            } else if LaunchOptions.open == "loved-pick" {
+                route = .loved
+            }
+            #endif
+        }
     }
 
     @ViewBuilder private func destination(_ r: Route) -> some View {
@@ -192,6 +203,10 @@ struct AppleHealthView: View {
 
 /// About + privacy.
 struct AboutView: View {
+    @EnvironmentObject private var store: PickleStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var confirmDelete = false
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.l) {
@@ -204,9 +219,23 @@ struct AboutView: View {
                 Text("Your diary and health data stay on your device and sync privately through your iCloud. There's no account and no server holding your numbers.")
                     .font(PickleFont.body(15)).foregroundStyle(Palette.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Text("The one exception is AI logging: when you describe or photograph a meal, that text or image is sent to an AI service to estimate macros, then discarded. Nothing else leaves your device.")
+                Text("The one exception is AI logging: when you describe or photograph a meal, that text or image is sent to an AI service to estimate macros, then discarded. Nothing else leaves your device. These estimates are approximate and not medical or dietary advice.")
                     .font(PickleFont.body(14)).foregroundStyle(Palette.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
+
+                Eyebrow(text: "Your data").padding(.top, Spacing.s)
+                Button { confirmDelete = true } label: {
+                    HStack(spacing: Spacing.s) {
+                        PickleIcon(.delete, size: 15)
+                        Text("Delete all my data")
+                    }
+                    .font(PickleFont.button(14))
+                    .foregroundStyle(Palette.over)
+                    .frame(maxWidth: .infinity, minHeight: 48)
+                    .overlay(RoundedRectangle(cornerRadius: Radius.button)
+                        .stroke(Palette.over.opacity(0.4), lineWidth: 1))
+                }
+                .buttonStyle(.pressable)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Version 0.1.0")
@@ -216,6 +245,16 @@ struct AboutView: View {
                 .padding(.top, Spacing.l)
             }
             .padding(Spacing.screen)
+        }
+        .alert("Delete all your data?", isPresented: $confirmDelete) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete everything", role: .destructive) {
+                store.deleteAllData()
+                Haptics.confirm()
+                dismiss()
+            }
+        } message: {
+            Text("This permanently deletes your profile, diary, weights, and saved foods on this device. This can't be undone.")
         }
     }
 }

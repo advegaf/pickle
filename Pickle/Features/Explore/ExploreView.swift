@@ -75,33 +75,38 @@ struct CollectionSelection: Identifiable {
     let foods: [FoodCandidate]
 }
 
-/// Clean (photo-free) recipe tile: name + totals, no separators.
+/// Photo-backed recipe tile: a treated background image, a bottom-up gradient for legibility,
+/// then the name + totals overlaid at the bottom. Falls back to a gradient placeholder.
 struct RecipeCard: View {
     let recipe: Recipe
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: Spacing.s) {
-                Text(recipe.name)
-                    .font(PickleFont.heading(18))
-                    .foregroundStyle(Palette.primary)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: Spacing.s)
-                HStack(spacing: 12) {
-                    Text("\(recipe.totals.kcal) cal")
-                        .foregroundStyle(Palette.secondary)
-                    Text("\(recipe.totals.proteinG)g protein")
-                        .foregroundStyle(Palette.tertiary)
+            ZStack(alignment: .bottomLeading) {
+                TreatedImage(asset: recipe.imageAsset, seed: recipe.id.hashValue)
+                LinearGradient(colors: [.clear, .black.opacity(0.85)],
+                               startPoint: .center, endPoint: .bottom)
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(recipe.name)
+                        .font(PickleFont.heading(18))
+                        .foregroundStyle(Palette.primary)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                    HStack(spacing: 12) {
+                        Text("\(recipe.totals.kcal) cal")
+                            .foregroundStyle(Palette.primary.opacity(0.9))
+                        Text("\(recipe.totals.proteinG)g protein")
+                            .foregroundStyle(Palette.primary.opacity(0.7))
+                    }
+                    .font(PickleFont.caption(12))
+                    .monospacedDigit()
                 }
-                .font(PickleFont.caption(12))
-                .monospacedDigit()
+                .padding(Spacing.m)
             }
-            .frame(maxWidth: .infinity, minHeight: 116, alignment: .topLeading)
-            .padding(Spacing.l)
-            .background(Palette.surface)
+            .frame(maxWidth: .infinity, minHeight: 150, alignment: .bottomLeading)
             .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+            .imageOutline()
         }
         .buttonStyle(.pressable)
         .accessibilityElement(children: .combine)

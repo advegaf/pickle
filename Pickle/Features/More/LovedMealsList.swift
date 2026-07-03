@@ -5,6 +5,7 @@ import SwiftUI
 struct LovedMealsList: View {
     @EnvironmentObject private var store: PickleStore
     @State private var justLogged: UUID?
+    @State private var chooseSlotFor: LovedMealDTO?
 
     private var meals: [LovedMealDTO] { store.lovedMeals() }
 
@@ -31,6 +32,25 @@ struct LovedMealsList: View {
         }
         .scrollIndicators(.hidden)
         .background(Palette.background)
+        .sheet(item: $chooseSlotFor) { meal in
+            MealSlotPickerSheet(mealName: meal.name) { slot in logMeal(meal, into: slot) }
+                .presentationDetents([.height(380)])
+                .presentationBackground(Palette.background)
+                .presentationDragIndicator(.visible)
+        }
+        .onAppear {
+            #if DEBUG
+            // `--open loved-pick` auto-opens the meal chooser for the screenshot loop.
+            if LaunchOptions.open == "loved-pick" { chooseSlotFor = meals.first }
+            #endif
+        }
+    }
+
+    private func logMeal(_ meal: LovedMealDTO, into slot: MealSlot) {
+        store.logLovedMeal(id: meal.id, into: slot)
+        Haptics.logAdded()
+        withAnimation(Motion.easeOut) { justLogged = meal.id }
+        chooseSlotFor = nil
     }
 
     private func row(_ meal: LovedMealDTO) -> some View {
@@ -42,9 +62,7 @@ struct LovedMealsList: View {
             }
             Spacer()
             Button {
-                store.logLovedMeal(id: meal.id, into: .current)
-                Haptics.logAdded()
-                withAnimation(Motion.easeOut) { justLogged = meal.id }
+                chooseSlotFor = meal
             } label: {
                 HStack(spacing: 5) {
                     PickleIcon(justLogged == meal.id ? .check : .add, size: 13)
@@ -71,5 +89,41 @@ struct LovedMealsList: View {
             .accessibilityLabel("Delete \(meal.name)")
         }
         .frame(minHeight: 56)
+    }
+}
+
+/// On-brand meal picker for re-logging a loved meal. A compact black sheet with four full-width
+/// buttons, matching the app's hot-path styling instead of the system confirmation dialog.
+private struct MealSlotPickerSheet: View {
+    let mealName: String
+    let onPick: (MealSlot) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.l) {
+            VStack(alignment: .leading, spacing: 4) {
+                Eyebrow(text: "Log to")
+                Text(mealName)
+                    .font(PickleFont.heading(22))
+                    .foregroundStyle(Palette.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            VStack(spacing: Spacing.s) {
+                ForEach(MealSlot.allCases) { slot in
+                    Button { onPick(slot) } label: {
+                        Text(slot.title)
+                            .font(PickleFont.button(15))
+                            .foregroundStyle(Palette.primary)
+                            .frame(maxWidth: .infinity, minHeight: 52)
+                            .background(Palette.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: Radius.button))
+                    }
+                    .buttonStyle(.pressable)
+                }
+            }
+        }
+        .padding(.horizontal, Spacing.screen)
+        .padding(.top, Spacing.xl)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Palette.background)
     }
 }

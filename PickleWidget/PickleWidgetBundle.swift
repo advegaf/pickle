@@ -5,5 +5,6 @@ import SwiftUI
 struct PickleWidgetBundle: WidgetBundle {
     var body: some Widget {
         PickleWidget()
+        PickleMacrosWidget()
     }
 }

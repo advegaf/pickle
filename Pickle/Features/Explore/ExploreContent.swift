@@ -29,6 +29,8 @@ struct Recipe: Identifiable, Hashable {
     let items: [RecipeItem]
 
     var totals: MacroTargets { items.reduce(.zero) { $0 + $1.macros } }
+    /// Background photo asset for the recipe card (`recipe-<id>`); falls back to a gradient.
+    var imageAsset: String { "recipe-\(id)" }
 
     static let all: [Recipe] = [
         Recipe(id: "yogurt-berry-bowl", name: "Greek Yogurt & Berry Bowl", items: [

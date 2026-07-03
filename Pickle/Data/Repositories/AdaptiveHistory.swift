@@ -63,13 +63,25 @@ extension PickleStore {
         var lines: [String] = []
         lines.append("Goal: \(p.goal.title). Daily target \(t.kcal) cal (protein \(t.proteinG) g, carbs \(t.carbsG) g, fat \(t.fatG) g).")
 
+        // Frame "your week" by how long the user has actually used the app, so a new user
+        // reads as building a habit, not falling short of a 14-day window they never had.
+        let days = loggedDays()
+        let daysSinceStart: Int = {
+            guard let earliest = days.min(),
+                  let startOrd = DayKey.ordinal(earliest),
+                  let todayOrd = DayKey.ordinal(todayKey()) else { return 1 }
+            return max(todayOrd - startOrd + 1, 1)
+        }()
+        let effectiveWindow = min(windowDays, daysSinceStart)
+        lines.append("You have been tracking for \(daysSinceStart) day\(daysSinceStart == 1 ? "" : "s").")
+
         if input.loggedDays > 0 {
             let avg = Int(input.avgDailyIntakeKcal.rounded())
             let delta = avg - t.kcal
             let vs = delta == 0 ? "right on target" : "\(abs(delta)) cal \(delta > 0 ? "over" : "under") target"
-            lines.append("Last \(windowDays) days: logged \(input.loggedDays) of \(windowDays) days, averaging \(avg) cal/day (\(vs)).")
+            lines.append("Over your \(effectiveWindow) day\(effectiveWindow == 1 ? "" : "s") using the app: logged \(input.loggedDays) of \(effectiveWindow), averaging \(avg) cal/day (\(vs)).")
         } else {
-            lines.append("No days logged in the last \(windowDays) days yet.")
+            lines.append("No days logged yet.")
         }
 
         if t.proteinG > 0 {

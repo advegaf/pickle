@@ -8,19 +8,30 @@ struct FoodDetailView: View {
     var presetMeal: MealSlot
     let onAdded: () -> Void
 
+    /// When set, this screen edits an existing logged entry in place instead of adding a new one.
+    let editingID: UUID?
+
     @State private var amount: Double
     @State private var unit: ServingUnit
     @State private var meal: MealSlot
     @State private var isFavorite = false
 
-    init(candidate: FoodCandidate, presetMeal: MealSlot = .current, onAdded: @escaping () -> Void) {
+    init(candidate: FoodCandidate, presetMeal: MealSlot = .current,
+         editing: LoggedFood? = nil, onAdded: @escaping () -> Void) {
         self.candidate = candidate
         self.presetMeal = presetMeal
         self.onAdded = onAdded
-        let hasServing = candidate.nutrition.servingGrams != nil
-        _amount = State(initialValue: hasServing ? 1 : 100)
-        _unit = State(initialValue: hasServing ? .serving : .gram)
-        _meal = State(initialValue: presetMeal)
+        self.editingID = editing?.id
+        if let e = editing {
+            _amount = State(initialValue: e.amount)
+            _unit = State(initialValue: e.unit)
+            _meal = State(initialValue: e.meal)
+        } else {
+            let hasServing = candidate.nutrition.servingGrams != nil
+            _amount = State(initialValue: hasServing ? 1 : 100)
+            _unit = State(initialValue: hasServing ? .serving : .gram)
+            _meal = State(initialValue: presetMeal)
+        }
     }
 
     private var availableUnits: [ServingUnit] {
@@ -47,7 +58,7 @@ struct FoodDetailView: View {
         }
         .background(Palette.background)
         .safeAreaInset(edge: .bottom) {
-            PrimaryButton(title: "Add to log") { add() }
+            PrimaryButton(title: editingID == nil ? "Add to log" : "Save changes") { add() }
                 .padding(.horizontal, Spacing.screen)
                 .padding(.vertical, Spacing.m)
                 .background(Palette.background)
@@ -216,7 +227,11 @@ struct FoodDetailView: View {
     }
 
     private func add() {
-        store.log(candidate, amount: amount, unit: unit, meal: meal, macros: macros)
+        if let id = editingID {
+            store.updateLog(id: id, amount: amount, unit: unit, meal: meal, macros: macros)
+        } else {
+            store.log(candidate, amount: amount, unit: unit, meal: meal, macros: macros)
+        }
         Haptics.logAdded()
         onAdded()
     }

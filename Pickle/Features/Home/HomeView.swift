@@ -238,8 +238,8 @@ struct MealDetailView: View {
 
     private enum Route: Identifiable {
         case log
-        case detail(FoodCandidate)
-        var id: String { switch self { case .log: return "log"; case .detail(let c): return "detail-\(c.id)" } }
+        case detail(FoodCandidate, LoggedFood)
+        var id: String { switch self { case .log: return "log"; case .detail(_, let e): return "detail-\(e.id)" } }
     }
 
     private var entries: [LoggedFood] { store.diaryDay(localDay).entries(for: meal) }
@@ -306,9 +306,9 @@ struct MealDetailView: View {
             switch r {
             case .log:
                 LogSheet(presetMeal: meal).environmentObject(store)
-            case .detail(let cand):
+            case .detail(let cand, let entry):
                 NavigationStack {
-                    FoodDetailView(candidate: cand, presetMeal: meal) { route = nil }
+                    FoodDetailView(candidate: cand, presetMeal: meal, editing: entry) { route = nil }
                 }
                 .environmentObject(store)
                 .presentationBackground(Palette.background)
@@ -342,7 +342,7 @@ struct MealDetailView: View {
         HStack {
             Button {
                 if let cand = store.foodCandidate(forCanonicalID: entry.canonicalID) {
-                    route = .detail(cand); Haptics.select()
+                    route = .detail(cand, entry); Haptics.select()
                 }
             } label: {
                 HStack {

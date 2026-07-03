@@ -81,6 +81,10 @@ struct AILogView: View {
             MealRowPicker(meal: $meal).padding(.horizontal, Spacing.screen)
 
             Spacer()
+            Text("AI estimates are approximate, not medical or dietary advice.")
+                .font(PickleFont.caption(12))
+                .foregroundStyle(Palette.tertiary)
+                .padding(.horizontal, Spacing.screen)
             PrimaryButton(title: "Estimate", enabled: !text.trimmingCharacters(in: .whitespaces).isEmpty) {
                 Task { await runText() }
             }

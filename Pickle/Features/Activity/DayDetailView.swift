@@ -5,7 +5,13 @@ struct DayDetailView: View {
     @EnvironmentObject private var store: PickleStore
     @Environment(\.dismiss) private var dismiss
     let localDay: String
-    @State private var detail: FoodCandidate?
+    @State private var detail: EditTarget?
+
+    private struct EditTarget: Identifiable {
+        let candidate: FoodCandidate
+        let entry: LoggedFood
+        var id: UUID { entry.id }
+    }
 
     private var day: DiaryDay { store.diaryDay(localDay) }
 
@@ -35,9 +41,9 @@ struct DayDetailView: View {
             }
         }
         .presentationBackground(Palette.background)
-        .sheet(item: $detail) { cand in
+        .sheet(item: $detail) { target in
             NavigationStack {
-                FoodDetailView(candidate: cand, presetMeal: .current) { detail = nil }
+                FoodDetailView(candidate: target.candidate, presetMeal: .current, editing: target.entry) { detail = nil }
             }
             .environmentObject(store)
             .presentationBackground(Palette.background)
@@ -80,7 +86,7 @@ struct DayDetailView: View {
                     HStack {
                         Button {
                             if let cand = store.foodCandidate(forCanonicalID: entry.canonicalID) {
-                                detail = cand; Haptics.select()
+                                detail = EditTarget(candidate: cand, entry: entry); Haptics.select()
                             }
                         } label: {
                             HStack {
