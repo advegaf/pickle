@@ -171,6 +171,20 @@ final class PickleStore: ObservableObject {
         return true
     }
 
+    /// The trailing `back` days of diary BEFORE today, oldest first, in one ranged fetch
+    /// (feeds the prediction engine and any history-window feature without per-day queries).
+    func recentDays(back: Int) -> [DiaryDay] {
+        let today = todayKey()
+        guard back > 0, let startKey = DayKey.shifted(today, by: -back) else { return [] }
+        let descriptor = FetchDescriptor<LogEntry>(
+            predicate: #Predicate { $0.localDay >= startKey && $0.localDay < today },
+            sortBy: [SortDescriptor(\.loggedAt)]
+        )
+        let entries = (try? context.fetch(descriptor)) ?? []
+        let grouped = Dictionary(grouping: entries.map(LoggedFood.init), by: \.localDay)
+        return grouped.keys.sorted().map { DiaryDay(localDay: $0, entries: grouped[$0] ?? []) }
+    }
+
     /// All diary days, newest first, used by export.
     func allDiaryDays() -> [DiaryDay] {
         let entries = (try? context.fetch(FetchDescriptor<LogEntry>(sortBy: [SortDescriptor(\.loggedAt)]))) ?? []

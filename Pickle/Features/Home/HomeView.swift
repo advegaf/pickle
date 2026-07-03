@@ -19,9 +19,19 @@ struct HomeView: View {
     @State private var selectedDay = ""
     /// Cached kcal-per-day for the strip, refreshed per store revision.
     @State private var dayKcal: [String: Int] = [:]
+    /// Memoized prediction for the next unlogged slot (recomputed per revision/day).
+    @State private var prediction: MealPrediction?
+    /// A tapped prediction opens Food detail prefilled with the predicted food.
+    @State private var predictedRoute: PredictedRoute?
     /// Detects midnight rollover across foreground/day-change events.
     @State private var lastKnownToday = ""
     @Environment(\.scenePhase) private var scenePhase
+
+    private struct PredictedRoute: Identifiable {
+        let candidate: FoodCandidate
+        let slot: MealSlot
+        var id: String { candidate.canonicalID }
+    }
 
     private var profile: ProfileData { store.profile() }
     private var today: String { store.todayKey() }
@@ -58,6 +68,22 @@ struct HomeView: View {
                     MacroCardRow(consumed: day.totals, targets: profile.targets)
                         .pickleEntrance(index: 3)
 
+                    // The predicted card belongs to TODAY only; hidden on past days.
+                    // With a prediction it is one tap to log; with no slot history it
+                    // shows only on an empty day, as the first-log nudge.
+                    if viewingToday, let prediction,
+                       prediction.food != nil || day.isEmpty {
+                        PredictedMealCard(prediction: prediction) {
+                            if let food = prediction.food,
+                               let cand = store.foodCandidate(forCanonicalID: food.canonicalID) {
+                                predictedRoute = PredictedRoute(candidate: cand, slot: prediction.slot)
+                            } else {
+                                onLogMeal(prediction.slot, nil)
+                            }
+                        }
+                        .pickleEntrance(index: 4)
+                    }
+
                     mealsSection.pickleEntrance(index: 4)
                     quickLinks.pickleEntrance(index: 5)
                 }
@@ -70,6 +96,15 @@ struct HomeView: View {
         .sheet(item: $mealDetail) { meal in
             MealDetailView(meal: meal, localDay: shownDay)
                 .environmentObject(store)
+        }
+        .sheet(item: $predictedRoute) { route in
+            NavigationStack {
+                FoodDetailView(candidate: route.candidate, presetMeal: route.slot) {
+                    predictedRoute = nil
+                }
+            }
+            .environmentObject(store)
+            .presentationBackground(Palette.background)
         }
         .onAppear { syncDay() }
         .onChange(of: store.revision) { _, _ in refreshDayKcal() }
@@ -93,6 +128,8 @@ struct HomeView: View {
 
     private func refreshDayKcal() {
         dayKcal = store.dailyKcal()
+        prediction = PredictedMealEngine.predict(history: store.recentDays(back: 28),
+                                                 today: store.diaryDay(today))
     }
 
     // MARK: Header
