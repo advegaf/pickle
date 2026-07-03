@@ -7,6 +7,8 @@ import PhotosUI
 struct AILogView: View {
     @EnvironmentObject private var store: PickleStore
     let onConfirm: () -> Void
+    /// When set, confirmed items are stamped onto this moment (backfilling a past day).
+    var logDate: Date? = nil
 
     @State private var text = ""
     @State private var meal: MealSlot = .current
@@ -215,7 +217,8 @@ struct AILogView: View {
 
     private func addAll() {
         for item in items where !item.needsReview {
-            store.log(item.candidate(), amount: 1, unit: .serving, meal: meal, macros: item.macros)
+            store.log(item.candidate(), amount: 1, unit: .serving, meal: meal, macros: item.macros,
+                      at: logDate ?? Date())
         }
         Haptics.celebrate()
         onConfirm()

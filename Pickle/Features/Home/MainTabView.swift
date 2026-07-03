@@ -17,7 +17,7 @@ struct MainTabView: View {
 
             ZStack {
                 keptTab(0) { HomeView(onLog: { logRequest = LogRequest(meal: .current) },
-                                      onLogMeal: { logRequest = LogRequest(meal: $0) }) }
+                                      onLogMeal: { logRequest = LogRequest(meal: $0, day: $1) }) }
                 keptTab(1) { ExploreView() }
                 keptTab(2) { CoachView() }
                 keptTab(3) { ActivityView() }
@@ -35,7 +35,7 @@ struct MainTabView: View {
         }
         .onChange(of: selection) { _, new in visited.insert(new) }
         .sheet(item: $logRequest) { request in
-            LogSheet(presetMeal: request.meal)
+            LogSheet(presetMeal: request.meal, logDay: request.day)
                 .environmentObject(store)
         }
         .onOpenURL { url in
@@ -66,8 +66,10 @@ struct MainTabView: View {
     }
 }
 
-/// Identifies a Log-sheet presentation, carrying which meal to preselect.
+/// Identifies a Log-sheet presentation, carrying which meal to preselect and, for
+/// explicit backfill from a viewed past day, which day to log onto (nil = today).
 struct LogRequest: Identifiable {
     let meal: MealSlot
-    var id: String { meal.rawValue }
+    var day: String? = nil
+    var id: String { "\(meal.rawValue)-\(day ?? "today")" }
 }

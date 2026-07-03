@@ -10,6 +10,8 @@ struct FoodDetailView: View {
 
     /// When set, this screen edits an existing logged entry in place instead of adding a new one.
     let editingID: UUID?
+    /// When set, new logs are stamped onto this moment (backfilling a viewed past day).
+    let logDate: Date?
 
     @State private var amount: Double
     @State private var unit: ServingUnit
@@ -17,11 +19,12 @@ struct FoodDetailView: View {
     @State private var isFavorite = false
 
     init(candidate: FoodCandidate, presetMeal: MealSlot = .current,
-         editing: LoggedFood? = nil, onAdded: @escaping () -> Void) {
+         editing: LoggedFood? = nil, logDate: Date? = nil, onAdded: @escaping () -> Void) {
         self.candidate = candidate
         self.presetMeal = presetMeal
         self.onAdded = onAdded
         self.editingID = editing?.id
+        self.logDate = logDate
         if let e = editing {
             _amount = State(initialValue: e.amount)
             _unit = State(initialValue: e.unit)
@@ -230,7 +233,8 @@ struct FoodDetailView: View {
         if let id = editingID {
             store.updateLog(id: id, amount: amount, unit: unit, meal: meal, macros: macros)
         } else {
-            store.log(candidate, amount: amount, unit: unit, meal: meal, macros: macros)
+            store.log(candidate, amount: amount, unit: unit, meal: meal, macros: macros,
+                      at: logDate ?? Date())
         }
         Haptics.logAdded()
         onAdded()

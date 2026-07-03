@@ -36,6 +36,31 @@ enum DayKey {
         f.timeZone = TimeZone(identifier: "UTC")
         return f.string(from: date)
     }
+
+    /// Weekday index (1 = Sunday ... 7 = Saturday, Calendar convention) for a label.
+    /// Derived from the ordinal: day 0 (1970-01-01) was a Thursday (= 5).
+    static func weekday(_ key: String) -> Int? {
+        guard let ord = ordinal(key) else { return nil }
+        return ((ord % 7) + 7 + 4) % 7 + 1
+    }
+
+    /// The label of the first day of the week containing `key`, honoring the locale's
+    /// first weekday (1 = Sunday, 2 = Monday). Pure ordinal math: safe across DST,
+    /// month, and year boundaries.
+    static func weekStart(of key: String, firstWeekday: Int = Calendar.current.firstWeekday) -> String? {
+        guard let wd = weekday(key) else { return nil }
+        let daysSinceStart = (wd - firstWeekday + 7) % 7
+        return shifted(key, by: -daysSinceStart)
+    }
+
+    /// A concrete moment inside a local day label: noon local time, immune to DST edges
+    /// (used to backfill logs onto a viewed past day).
+    static func date(from key: String, in timeZone: TimeZone = .current) -> Date? {
+        let f = formatter
+        f.timeZone = timeZone
+        guard let midnight = f.date(from: key) else { return nil }
+        return midnight.addingTimeInterval(12 * 3600)
+    }
 }
 
 /// Current logging streak, computed purely from the set of days that have ≥1 log.

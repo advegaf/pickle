@@ -5,6 +5,8 @@ struct QuickAddView: View {
     @EnvironmentObject private var store: PickleStore
     var presetMeal: MealSlot
     let onAdded: () -> Void
+    /// When set, the log is stamped onto this moment (backfilling a viewed past day).
+    let logDate: Date?
 
     @State private var kcal = 0
     @State private var protein = 0
@@ -12,8 +14,9 @@ struct QuickAddView: View {
     @State private var fat = 0
     @State private var meal: MealSlot
 
-    init(presetMeal: MealSlot = .current, onAdded: @escaping () -> Void) {
+    init(presetMeal: MealSlot = .current, logDate: Date? = nil, onAdded: @escaping () -> Void) {
         self.presetMeal = presetMeal
+        self.logDate = logDate
         self.onAdded = onAdded
         _meal = State(initialValue: presetMeal)
     }
@@ -61,7 +64,8 @@ struct QuickAddView: View {
             sourceID: "quick:\(UUID().uuidString)", barcode: nil,
             nutrition: FoodNutrition(kcalPer100: Double(finalKcal), proteinPer100: Double(protein),
                                      carbsPer100: Double(carbs), fatPer100: Double(fat), servingGrams: 100))
-        store.log(candidate, amount: 1, unit: .serving, meal: meal, macros: macros)
+        store.log(candidate, amount: 1, unit: .serving, meal: meal, macros: macros,
+                  at: logDate ?? Date())
         Haptics.logAdded()
         onAdded()
     }

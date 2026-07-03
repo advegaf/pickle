@@ -6,16 +6,23 @@ struct LogSheet: View {
     @Environment(\.dismiss) private var dismiss
     var presetMeal: MealSlot = .current
     var prefillQuery: String = ""
+    /// When set (a `yyyy-MM-dd` label), every mode logs onto that day instead of today
+    /// (explicit backfill from the Home week strip / a past day's meal detail).
+    var logDay: String? = nil
 
     @State private var mode: Mode
     @State private var path: [Route] = []
 
-    init(presetMeal: MealSlot = .current, prefillQuery: String = "") {
+    init(presetMeal: MealSlot = .current, prefillQuery: String = "", logDay: String? = nil) {
         self.presetMeal = presetMeal
         self.prefillQuery = prefillQuery
+        self.logDay = logDay
         // Open on Recents for fast re-logging; a prefilled query (from Explore) opens Search.
         _mode = State(initialValue: prefillQuery.isEmpty ? .recents : .search)
     }
+
+    /// Noon of the backfill day; nil means "now".
+    private var logDate: Date? { logDay.flatMap { DayKey.date(from: $0) } }
 
     enum Mode: String, CaseIterable, Identifiable {
         case recents = "Recents", search = "Search", scan = "Scan", ai = "AI", quick = "Quick"
@@ -40,7 +47,8 @@ struct LogSheet: View {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .detail(let candidate):
-                    FoodDetailView(candidate: candidate, presetMeal: presetMeal, onAdded: finish)
+                    FoodDetailView(candidate: candidate, presetMeal: presetMeal,
+                                   logDate: logDate, onAdded: finish)
                 case .custom(let query):
                     CustomFoodView(prefillName: query) { path.append(.detail($0)) }
                 }
@@ -98,9 +106,9 @@ struct LogSheet: View {
             ScanView(onFound: { path.append(.detail($0)) },
                      onManual: { mode = .search })
         case .ai:
-            AILogView(onConfirm: finish)
+            AILogView(onConfirm: finish, logDate: logDate)
         case .quick:
-            QuickAddView(presetMeal: presetMeal, onAdded: finish)
+            QuickAddView(presetMeal: presetMeal, logDate: logDate, onAdded: finish)
         }
     }
 

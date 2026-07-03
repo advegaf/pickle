@@ -1,122 +1,165 @@
 import SwiftUI
 
-/// The data-forward Home. The kcal-remaining ring leads; the editorial headline is large on
-/// the first-run empty state and recedes to a quiet greeting once the day has data.
+/// The Glow Home: greeting header with streak chip, a week scrubber that drives the
+/// whole screen's data, the calorie arc hero, macro cards, then meals and quick links.
+///
+/// Day semantics: `selectedDay` defaults to today and snaps back on day rollover or
+/// app foreground. Viewing a past day is explicit backfill mode: the meals section is
+/// titled with that date and empty-slot taps log to THAT day; the greeting, streak,
+/// and the global tab-bar Log button always belong to today.
 struct HomeView: View {
     @EnvironmentObject private var store: PickleStore
     var onLog: () -> Void = {}
-    var onLogMeal: (MealSlot) -> Void = { _ in }
+    /// Log into a meal slot; `day` nil means today, otherwise an explicit backfill day.
+    var onLogMeal: (MealSlot, String?) -> Void = { _, _ in }
     @State private var mealDetail: MealSlot?
     @State private var quickSheet: QuickSheet?
     @State private var showProfile = false
+    /// The day the screen is showing. Empty until first appear, then always a valid key.
+    @State private var selectedDay = ""
+    /// Cached kcal-per-day for the strip, refreshed per store revision.
+    @State private var dayKcal: [String: Int] = [:]
+    /// Detects midnight rollover across foreground/day-change events.
+    @State private var lastKnownToday = ""
+    @Environment(\.scenePhase) private var scenePhase
 
     private var profile: ProfileData { store.profile() }
-    private var day: DiaryDay { store.today() }
+    private var today: String { store.todayKey() }
+    private var viewingToday: Bool { selectedDay.isEmpty || selectedDay == today }
+    private var shownDay: String { viewingToday ? today : selectedDay }
+    private var day: DiaryDay { store.diaryDay(shownDay) }
     private var streak: Int {
-        StreakCalculator.currentStreak(loggedDays: store.loggedDays(), today: store.todayKey())
+        StreakCalculator.currentStreak(loggedDays: store.loggedDays(), today: today)
     }
-    private var firstRun: Bool { day.isEmpty }
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
+        ZStack {
             Palette.background.ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.xl) {
                     header
+                    greetingBlock
 
-                    if firstRun {
-                        Text("What will you\nfuel today?")
-                            .font(PickleFont.display(34))
-                            .foregroundStyle(Palette.primary)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .accessibilityAddTraits(.isHeader)
-                    } else {
-                        Text(greeting)
-                            .font(PickleFont.bodyMedium(17))
-                            .foregroundStyle(Palette.secondary)
-                    }
+                    WeekStrip(today: today,
+                              selected: shownDay,
+                              dayKcal: dayKcal,
+                              onSelect: { selectedDay = $0 })
+                        .pickleEntrance(index: 1)
 
-                    DailyFuelCard(
-                        consumed: day.totals.kcal,
-                        target: profile.targets.kcal,
-                        protein: (day.totals.proteinG, profile.targets.proteinG),
-                        carbs: (day.totals.carbsG, profile.targets.carbsG),
-                        fat: (day.totals.fatG, profile.targets.fatG),
-                        mealsLogged: day.loggedMealCount,
-                        mealsTotal: MealSlot.allCases.count
-                    )
-                    .pickleEntrance(index: 1)
+                    ArcGauge(consumed: day.totals.kcal,
+                             target: profile.targets.kcal,
+                             hasData: profile.targets.kcal > 0,
+                             isEmptyDay: viewingToday && day.isEmpty)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.s)
+                        .pickleEntrance(index: 2)
 
-                    if streak >= 3 {
-                        MilestoneBanner(title: "\(streak)-day streak",
-                                        subtitle: "You're building real momentum. Keep it going.")
-                            .pickleEntrance(index: 2)
-                    }
+                    MacroCardRow(consumed: day.totals, targets: profile.targets)
+                        .pickleEntrance(index: 3)
 
-                    if firstRun {
-                        firstRunHint
-                    }
-
-                    mealsSection.pickleEntrance(index: 3)
-                    quickLinks.pickleEntrance(index: 4)
+                    mealsSection.pickleEntrance(index: 4)
+                    quickLinks.pickleEntrance(index: 5)
                 }
                 .padding(.horizontal, Spacing.screen)
                 .padding(.top, Spacing.s)
-                .padding(.bottom, 140)
+                .padding(.bottom, Spacing.l)
             }
-
+            .scrollIndicators(.hidden)
         }
         .sheet(item: $mealDetail) { meal in
-            MealDetailView(meal: meal, localDay: store.todayKey())
+            MealDetailView(meal: meal, localDay: shownDay)
                 .environmentObject(store)
         }
+        .onAppear { syncDay() }
+        .onChange(of: store.revision) { _, _ in refreshDayKcal() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { syncDay() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+            Task { @MainActor in syncDay() }
+        }
     }
+
+    /// Snap the selection back to today after a rollover and refresh the strip cache.
+    private func syncDay() {
+        let now = store.todayKey()
+        if selectedDay.isEmpty || lastKnownToday != now {
+            selectedDay = now
+            lastKnownToday = now
+        }
+        refreshDayKcal()
+    }
+
+    private func refreshDayKcal() {
+        dayKcal = store.dailyKcal()
+    }
+
+    // MARK: Header
 
     private var header: some View {
         HStack(spacing: Spacing.m) {
             Button { showProfile = true } label: {
                 ZStack {
-                    Circle().stroke(Palette.hairline, lineWidth: 1).frame(width: 40, height: 40)
+                    Circle()
+                        .fill(Palette.surface)
+                        .overlay(Circle().strokeBorder(Palette.glassEdge, lineWidth: 1))
+                        .frame(width: 40, height: 40)
                     Text(initials)
-                        .font(PickleFont.eyebrow(13))
+                        .font(PickleFont.bodyMedium(14))
                         .foregroundStyle(Palette.primary)
                 }
             }
             .buttonStyle(.pressable)
             .accessibilityLabel("Your profile")
+
             Spacer()
+
+            StreakChip(streak: streak)
+
             Button(action: onLog) {
-                PickleIcon(.search, size: 18)
-                    .foregroundStyle(Palette.primary)
-                    .frame(width: 44, height: 44)
+                PickleIcon(.search, size: 17)
+                    .foregroundStyle(Palette.secondary)
+                    .frame(width: 36, height: 36)
+                    .background(Palette.surface)
+                    .clipShape(Circle())
+                    .overlay(Circle().strokeBorder(Palette.glassEdge, lineWidth: 1))
             }
             .buttonStyle(.pressable)
+            .frame(width: 44, height: 44)
             .accessibilityLabel("Search foods")
         }
         .sheet(isPresented: $showProfile) { ProfileView().environmentObject(store) }
     }
 
-    private var firstRunHint: some View {
-        HStack(spacing: Spacing.s) {
-            PickleIcon(.arrowDownRight, size: 13)
-                .foregroundStyle(Palette.tertiary)
-            Text("Log your first meal to begin your day.")
-                .font(PickleFont.body(15))
+    private var greetingBlock: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(greeting)
+                .font(PickleFont.heading(22))
+                .foregroundStyle(Palette.primary)
+                .accessibilityAddTraits(.isHeader)
+            Text(todayLine)
+                .font(PickleFont.caption())
                 .foregroundStyle(Palette.secondary)
         }
-        .padding(.vertical, Spacing.s)
     }
+
+    // MARK: Meals
 
     private var mealsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Today's meals")
+            SectionLabel(text: viewingToday ? "Today's meals" : dayTitle(shownDay))
             VStack(spacing: Spacing.m) {
                 ForEach(MealSlot.allCases) { meal in
                     let entries = day.entries(for: meal)
                     MealCard(meal: meal, entries: entries) {
-                        // Empty slot logs straight away; a slot with food opens its detail.
-                        if entries.isEmpty { onLogMeal(meal) } else { mealDetail = meal }
+                        // Empty slot logs straight away (backfills when viewing a past
+                        // day); a slot with food opens its detail.
+                        if entries.isEmpty {
+                            onLogMeal(meal, viewingToday ? nil : shownDay)
+                        } else {
+                            mealDetail = meal
+                        }
                     }
                 }
             }
@@ -125,7 +168,7 @@ struct HomeView: View {
 
     private var quickLinks: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Quick links")
+            SectionLabel(text: "Quick links")
             GroupedListCard {
                 ListRow(icon: .favorite, title: "Favorites") { quickSheet = .favorites }
                 ListRowDivider()
@@ -157,11 +200,27 @@ struct HomeView: View {
         }
     }
 
+    // MARK: Copy
+
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
         let part = hour < 12 ? "Good morning" : (hour < 18 ? "Good afternoon" : "Good evening")
         let name = profile.name.isEmpty ? "" : ", \(profile.name)"
         return "\(part)\(name)"
+    }
+
+    private var todayLine: String {
+        let f = DateFormatter()
+        f.dateFormat = "EEEE, MMM d"
+        return f.string(from: Date())
+    }
+
+    /// "Tuesday, Jul 1" for a past day's meals section title.
+    private func dayTitle(_ key: String) -> String {
+        guard let date = DayKey.date(from: key) else { return key }
+        let f = DateFormatter()
+        f.dateFormat = "EEEE, MMM d"
+        return f.string(from: date)
     }
 
     private var initials: String {
@@ -185,7 +244,7 @@ struct MealCard: View {
         Button(action: onTap) {
             HStack(alignment: .center, spacing: Spacing.l) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Eyebrow(text: meal.title)
+                    SectionLabel(text: meal.title, color: Palette.tertiary)
                     if isEmpty {
                         Text("Add food")
                             .font(PickleFont.bodyMedium(17))
@@ -205,13 +264,12 @@ struct MealCard: View {
                 }
                 Spacer()
                 PickleIcon(isEmpty ? .add : .chevronRight, size: isEmpty ? 16 : 13)
-                    .foregroundStyle(isEmpty ? Palette.primary : Palette.tertiary)
+                    .foregroundStyle(isEmpty ? Palette.accent : Palette.tertiary)
                     .frame(width: 32, height: 32)
             }
             .padding(Spacing.l)
             .frame(maxWidth: .infinity)
-            .background(Palette.surface)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+            .glassCard(radius: 20)
         }
         .buttonStyle(.pressable)
         .accessibilityElement(children: .combine)
@@ -222,7 +280,7 @@ struct MealCard: View {
 
 /// One meal's logged items for a day: a focused detail opened from the Home meal card. Shows
 /// the meal's total + each item (with delete) and an "Add to <meal>" button that opens the Log
-/// sheet preset to this meal. Reuses the row + delete pattern from the Activity day detail.
+/// sheet preset to this meal (backfilling if the shown day is in the past).
 struct MealDetailView: View {
     @EnvironmentObject private var store: PickleStore
     @Environment(\.dismiss) private var dismiss
@@ -269,7 +327,7 @@ struct MealDetailView: View {
                             .font(PickleFont.button(14))
                             .foregroundStyle(justSaved ? Palette.success : Palette.primary)
                             .frame(maxWidth: .infinity, minHeight: 46)
-                            .overlay(RoundedRectangle(cornerRadius: Radius.button)
+                            .overlay(Capsule()
                                 .stroke((justSaved ? Palette.success : Palette.primary).opacity(0.35), lineWidth: 1))
                         }
                         .buttonStyle(.pressable)
@@ -280,7 +338,7 @@ struct MealDetailView: View {
                 }
                 .padding(.horizontal, Spacing.screen)
                 .padding(.top, Spacing.l)
-                .padding(.bottom, 120)
+                .padding(.bottom, Spacing.l)
             }
             .scrollIndicators(.hidden)
             .background(Palette.background)
@@ -302,7 +360,9 @@ struct MealDetailView: View {
         .sheet(item: $route) { r in
             switch r {
             case .log:
-                LogSheet(presetMeal: meal).environmentObject(store)
+                LogSheet(presetMeal: meal,
+                         logDay: localDay == store.todayKey() ? nil : localDay)
+                    .environmentObject(store)
             case .detail(let cand, let entry):
                 NavigationStack {
                     FoodDetailView(candidate: cand, presetMeal: meal, editing: entry) { route = nil }
