@@ -5,17 +5,18 @@ import WidgetKit
 // timeline entry views; the app renders them in a DEBUG-only gallery (`--open widgets`) so the
 // layouts can be screenshot-verified without adding the widgets to the springboard by hand.
 
-// Local palette (the app's Tokens live in the app target; the widget keeps its own minimal set).
+// Widget palette, derived from the shared PaletteValues so it can never drift from the app.
 enum W {
-    static let bg = Color.black
-    static let primary = Color.white
-    static let secondary = Color(.sRGB, white: 0.64, opacity: 1)   // ~#A3A3A3
-    static let tertiary = Color(.sRGB, white: 0.54, opacity: 1)    // ~#8A8A8A
-    static let faint = Color(.sRGB, white: 0.36, opacity: 1)
-    static let over = Color(.sRGB, red: 0.898, green: 0.282, blue: 0.302, opacity: 1)   // #E5484D
-    static let protein = Color(.sRGB, red: 0.91, green: 0.89, blue: 0.83, opacity: 1)
-    static let carbs = Color(.sRGB, red: 0.79, green: 0.76, blue: 0.69, opacity: 1)
-    static let fat = Color(.sRGB, red: 0.69, green: 0.66, blue: 0.56, opacity: 1)
+    static let bg = Color(hex: PaletteValues.background)
+    static let primary = Color(hex: PaletteValues.primary)
+    static let secondary = Color(hex: PaletteValues.secondary)
+    static let tertiary = Color(hex: PaletteValues.tertiary)
+    static let faint = Color(hex: PaletteValues.faint)
+    static let accent = Color(hex: PaletteValues.accent)
+    static let over = Color(hex: PaletteValues.over)
+    static let protein = Color(hex: PaletteValues.protein)
+    static let carbs = Color(hex: PaletteValues.carbs)
+    static let fat = Color(hex: PaletteValues.fat)
 }
 
 // MARK: - Building blocks
