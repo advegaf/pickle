@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The Glow Home: greeting header with streak chip, a week scrubber that drives the
-/// whole screen's data, the calorie arc hero, macro cards, then meals and quick links.
+/// The Glow Home: greeting header, a week scrubber that drives the whole screen's
+/// data, the calorie arc hero, macro cards, then meals and quick links.
 ///
 /// Day semantics: `selectedDay` defaults to today and snaps back on day rollover or
 /// app foreground. Viewing a past day is explicit backfill mode: the meals section is
@@ -42,9 +42,6 @@ struct HomeView: View {
     private var viewingToday: Bool { selectedDay.isEmpty || selectedDay == today }
     private var shownDay: String { viewingToday ? today : selectedDay }
     private var day: DiaryDay { store.diaryDay(shownDay) }
-    private var streak: Int {
-        StreakCalculator.currentStreak(loggedDays: store.loggedDays(), today: today)
-    }
 
     var body: some View {
         ZStack {
@@ -171,8 +168,6 @@ struct HomeView: View {
             .accessibilityLabel("Your profile")
 
             Spacer()
-
-            StreakChip(streak: streak)
 
             BellChip(missed: reminders.missedCount(today: store.diaryDay(today), todayKey: today)) {
                 showReminders = true

@@ -81,7 +81,8 @@ struct RemindersSheet: View {
                 set: { reminders.setEnabled(meal, enabled: $0) }
             ))
             .labelsHidden()
-            .tint(Palette.primary.opacity(0.85))
+            // Gray ON-track so the white system knob stays visible against it.
+            .tint(Palette.secondary)
             .disabled(denied)
             .frame(width: 51)
         }
