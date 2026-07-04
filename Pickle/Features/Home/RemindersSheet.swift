@@ -54,17 +54,14 @@ struct RemindersSheet: View {
 
     private func mealRow(_ meal: MealSlot) -> some View {
         let reminder = reminders.settings.reminder(for: meal)
+        // Fixed trailing columns: time pill just inside a constant-width toggle slot,
+        // so the toggles form a straight column regardless of the time's text width.
         return HStack(spacing: Spacing.m) {
-            Toggle(isOn: Binding(
-                get: { reminder.enabled },
-                set: { reminders.setEnabled(meal, enabled: $0) }
-            )) {
-                Text(meal.title)
-                    .font(PickleFont.bodyMedium(16))
-                    .foregroundStyle(denied ? Palette.tertiary : Palette.primary)
-            }
-            .tint(Palette.accent)
-            .disabled(denied)
+            Text(meal.title)
+                .font(PickleFont.bodyMedium(16))
+                .foregroundStyle(denied ? Palette.tertiary : Palette.primary)
+
+            Spacer(minLength: Spacing.s)
 
             if reminder.enabled {
                 DatePicker("", selection: Binding(
@@ -75,12 +72,24 @@ struct RemindersSheet: View {
                     }
                 ), displayedComponents: .hourAndMinute)
                 .labelsHidden()
-                .tint(Palette.accent)
+                .fixedSize()
+                .tint(Palette.primary)
             }
+
+            Toggle("", isOn: Binding(
+                get: { reminder.enabled },
+                set: { reminders.setEnabled(meal, enabled: $0) }
+            ))
+            .labelsHidden()
+            .tint(Palette.primary.opacity(0.85))
+            .disabled(denied)
+            .frame(width: 51)
         }
         .padding(.horizontal, Spacing.l)
         .frame(minHeight: 56)
         .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(meal.title) reminder")
+        .accessibilityValue(reminder.enabled ? "on, \(reminder.hour):\(String(format: "%02d", reminder.minute))" : "off")
     }
 
     private var deniedBanner: some View {

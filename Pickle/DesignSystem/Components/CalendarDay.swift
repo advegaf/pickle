@@ -35,7 +35,7 @@ struct CalendarDayCircle: View {
                     .offset(y: size * 0.28)
             }
             if isToday {
-                Circle().stroke(Palette.accent, lineWidth: 1)
+                Circle().stroke(Palette.primary.opacity(0.7), lineWidth: 1)
             }
         }
         .frame(width: size, height: size)

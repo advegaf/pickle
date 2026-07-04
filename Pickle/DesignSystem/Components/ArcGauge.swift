@@ -33,8 +33,9 @@ struct ArcGauge: View {
     /// The arc spans 270 degrees: trim covers 3/4 of the circle, rotated so the gap
     /// sits centered at the bottom (start 135, end 45 in screen degrees).
     private var trimEnd: CGFloat { 0.75 * fraction }
-    private var knobAngle: Angle { .degrees(135 + 270 * fraction) }
-    private var tint: Color { over > 0 ? Palette.over : Palette.accent }
+    /// The whole arc warms with progress (white-gray -> gold -> amber), red when over.
+    private var tint: Color { over > 0 ? Palette.over : ArcRamp.color(fraction: fraction) }
+    private var glowTint: Color { tint.opacity(0.5) }
 
     var body: some View {
         ZStack {
@@ -48,10 +49,10 @@ struct ArcGauge: View {
             if hasData && isEmptyDay {
                 Circle()
                     .trim(from: 0, to: 0.02)
-                    .stroke(Palette.accent.opacity(breathe ? 0.55 : 0.25),
+                    .stroke(ArcRamp.color(fraction: 0).opacity(breathe ? 0.65 : 0.3),
                             style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .rotationEffect(.degrees(135))
-                    .shadow(color: Palette.glow, radius: breathe ? 14 : 6)
+                    .shadow(color: .white.opacity(0.3), radius: breathe ? 14 : 6)
                     .onAppear {
                         guard !reduceMotion else { return }
                         withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
@@ -65,7 +66,7 @@ struct ArcGauge: View {
                 .trim(from: 0, to: drawn ? trimEnd : 0)
                 .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 .rotationEffect(.degrees(135))
-                .shadow(color: over > 0 ? Palette.over.opacity(0.5) : Palette.glow, radius: 14)
+                .shadow(color: glowTint, radius: 14)
                 .animation(reduceMotion ? nil : Motion.ringGrow, value: trimEnd)
                 .animation(reduceMotion ? nil : Motion.easeOut, value: over > 0)
 
@@ -95,17 +96,37 @@ struct ArcGauge: View {
     }
 
     private var knob: some View {
-        // Circle().stroke centers its stroke ON the shape path, whose radius is
-        // diameter/2 (the Circle inscribes the frame) - so the knob rides exactly there.
-        let radius = diameter / 2
+        // A glassy lens riding the arc head. Hand-built (backdrop-free): the real
+        // glassEffect plate rendered ~3x its frame here, so the lens look comes from a
+        // translucent fill, a specular top highlight, and a thin rim instead.
+        // Placement: offset to the stroke centerline (Circle().stroke centers ON the
+        // path at diameter/2), then rotate about the gauge center - rotationEffect's
+        // angle is animatable, so the lens TRAVELS ALONG THE ARC with the drawing
+        // line instead of cutting a chord.
+        let f = drawn ? fraction : 0
+        let size = lineWidth + 10
         return Circle()
-            .fill(tint)
-            .frame(width: lineWidth + 8, height: lineWidth + 8)
-            .overlay(Circle().stroke(Palette.background, lineWidth: 4))
-            .shadow(color: over > 0 ? Palette.over.opacity(0.5) : Palette.glow, radius: 10)
-            .offset(x: radius * cos(CGFloat(knobAngle.radians)),
-                    y: radius * sin(CGFloat(knobAngle.radians)))
-            .animation(reduceMotion ? nil : Motion.ringGrow, value: fraction)
+            .fill(.white.opacity(0.14))
+            .overlay(
+                Circle().strokeBorder(
+                    LinearGradient(colors: [.white.opacity(0.65), .white.opacity(0.10)],
+                                   startPoint: .top, endPoint: .bottom),
+                    lineWidth: 1.5
+                )
+            )
+            .overlay(
+                // Specular highlight kissing the top of the lens.
+                Circle()
+                    .fill(.white.opacity(0.35))
+                    .frame(width: size * 0.38, height: size * 0.22)
+                    .blur(radius: 2)
+                    .offset(y: -size * 0.26)
+            )
+            .frame(width: size, height: size)
+            .shadow(color: glowTint, radius: 10)
+            .offset(x: diameter / 2)
+            .rotationEffect(.degrees(135 + 270 * f))
+            .animation(reduceMotion ? nil : Motion.ringGrow, value: f)
     }
 
     private var center: some View {

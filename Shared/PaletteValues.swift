@@ -24,16 +24,52 @@ enum PaletteValues {
     static let tertiary = "8A8A8A"
     /// Non-interactive tracks and decoration ONLY. Fails contrast for glyphs and text.
     static let faint = "3C3C3C"
-    /// The one accent: ember amber. The gauge, the streak flame, today indicators.
-    static let accent = "FFA24D"
+    /// The accent equals the gauge ramp's goal color (Whoop-orange): the streak flame
+    /// and goal-met calendar days share it so "goal" reads as one color everywhere.
+    static let accent = "FF6F13"
     /// Text and glyphs placed on `accent` or on white controls.
     static let onAccent = "1F1206"
     /// Macro bars are monochrome: differentiation by label, not hue.
     static let protein = "FFFFFF"
     static let carbs = "FFFFFF"
     static let fat = "FFFFFF"
-    /// Over-goal red. Clearly red (not orange) so it never reads as the amber accent.
-    static let over = "FF5A5A"
+    /// Over-goal: Whoop red. Reserved for exceeding the goal + destructive actions.
+    static let over = "FF0026"
+}
+
+/// The gauge's progressive color, Whoop-graded: white-ish at an empty day, through
+/// Whoop green and yellow, landing on orange AT the goal. Red is deliberately NOT in
+/// the ramp - hitting the goal is success; over-goal callers switch to
+/// `PaletteValues.over` (Whoop red) themselves. Pure math, shared with the widgets.
+enum ArcRamp {
+    /// Sorted (fraction, RGB 0-255) stops. Green/yellow are Whoop's exact colors;
+    /// the goal orange is the exact midpoint of Whoop yellow -> Whoop red.
+    static let stops: [(fraction: Double, rgb: (r: Double, g: Double, b: Double))] = [
+        (0.0, (232, 232, 232)),  // #E8E8E8 white-ish
+        (0.30, (22, 236, 6)),    // #16EC06 Whoop green
+        (0.60, (255, 222, 0)),   // #FFDE00 Whoop yellow
+        (1.0, (255, 111, 19)),   // #FF6F13 Whoop yellow->red midpoint orange
+    ]
+
+    /// Piecewise-linear RGB interpolation between stops; clamps outside 0...1.
+    static func rgb(fraction: Double) -> (r: Double, g: Double, b: Double) {
+        let f = min(max(fraction, 0), 1)
+        guard let upperIndex = stops.firstIndex(where: { $0.fraction >= f }) else {
+            return stops[stops.count - 1].rgb
+        }
+        if upperIndex == 0 { return stops[0].rgb }
+        let lower = stops[upperIndex - 1]
+        let upper = stops[upperIndex]
+        let t = (f - lower.fraction) / (upper.fraction - lower.fraction)
+        return (lower.rgb.r + (upper.rgb.r - lower.rgb.r) * t,
+                lower.rgb.g + (upper.rgb.g - lower.rgb.g) * t,
+                lower.rgb.b + (upper.rgb.b - lower.rgb.b) * t)
+    }
+
+    static func color(fraction: Double) -> Color {
+        let c = rgb(fraction: fraction)
+        return Color(.sRGB, red: c.r / 255, green: c.g / 255, blue: c.b / 255, opacity: 1)
+    }
 }
 
 extension Color {

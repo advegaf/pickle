@@ -62,7 +62,7 @@ struct WeekStrip: View {
             )
             .overlay(
                 Capsule().strokeBorder(
-                    isToday && !isSelected ? Palette.accent.opacity(0.8) : Palette.glassEdge,
+                    isToday && !isSelected ? Palette.primary.opacity(0.7) : Palette.glassEdge,
                     lineWidth: 1
                 )
             )

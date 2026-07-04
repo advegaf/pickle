@@ -42,12 +42,15 @@ struct RingMini: View {
     }
 }
 
-/// Calorie arc. Thin wrapper over `RingMini` that picks the accent vs the over-coral.
+/// Calorie arc. Same progressive ramp as the app's hero gauge (flat, no glow).
 struct KcalRingMini: View {
     let fraction: Double
     let lineWidth: CGFloat
     var over: Bool = false
-    var body: some View { RingMini(fraction: fraction, lineWidth: lineWidth, tint: over ? W.over : W.accent) }
+    var body: some View {
+        RingMini(fraction: fraction, lineWidth: lineWidth,
+                 tint: over ? W.over : ArcRamp.color(fraction: fraction))
+    }
 }
 
 /// Discrete meals-logged dots (filled = logged, hollow = remaining). No "·" separators.

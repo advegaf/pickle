@@ -37,6 +37,10 @@ struct PickleApp: App {
         // backed by UIScrollView, so this hides the indicator app wide in one place.
         UIScrollView.appearance().showsVerticalScrollIndicator = false
         UIScrollView.appearance().showsHorizontalScrollIndicator = false
+        // Vertical screens must never wander sideways: no horizontal rubber-band, and
+        // drags lock to the dominant axis so content can't drift diagonally.
+        UIScrollView.appearance().alwaysBounceHorizontal = false
+        UIScrollView.appearance().isDirectionalLockEnabled = true
     }
 
     var body: some Scene {

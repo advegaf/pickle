@@ -65,7 +65,7 @@ struct ActivityView: View {
     }
 
     private var legend: some View {
-        HStack(spacing: Spacing.l) {
+        HStack(spacing: Spacing.xl) {
             legendItem(.goalHit, "Goal met")
             legendItem(.logged, "Logged")
             legendItem(.empty, "Missed")
@@ -75,10 +75,10 @@ struct ActivityView: View {
     }
 
     private func legendItem(_ state: CalendarDayCircle.DayState, _ label: String) -> some View {
-        HStack(spacing: 6) {
-            CalendarDayCircle(day: 0, state: state, size: 14)
-                .frame(width: 14, height: 14)
-            Text(label).font(PickleFont.caption(11)).foregroundStyle(Palette.tertiary)
+        HStack(spacing: 8) {
+            CalendarDayCircle(day: 0, state: state, size: 24)
+                .frame(width: 24, height: 24)
+            Text(label).font(PickleFont.caption(13)).foregroundStyle(Palette.secondary)
         }
     }
 

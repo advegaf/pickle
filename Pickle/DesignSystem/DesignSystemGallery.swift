@@ -14,10 +14,12 @@ struct DesignSystemGallery: View {
                 VStack(alignment: .leading, spacing: Spacing.xxl) {
                     header
 
-                    group("Arc gauge") {
+                    group("Arc gauge (Whoop ramp)") {
                         VStack(spacing: Spacing.xl) {
-                            ArcGauge(consumed: 1023, target: 2000, diameter: 200)
-                            ArcGauge(consumed: 2134, target: 2000, diameter: 160)
+                            ArcGauge(consumed: 300, target: 2000, diameter: 160)   // green zone
+                            ArcGauge(consumed: 1023, target: 2000, diameter: 200)  // yellow zone
+                            ArcGauge(consumed: 1840, target: 2000, diameter: 160)  // orange, near goal
+                            ArcGauge(consumed: 2134, target: 2000, diameter: 160)  // Whoop red, over
                             ArcGauge(consumed: 0, target: 2000, diameter: 160, isEmptyDay: true)
                             ArcGauge(consumed: 0, target: 0, diameter: 160, hasData: false)
                         }
