@@ -41,6 +41,14 @@ type Item = {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+
+    // The app's public privacy policy (linked from App Store Connect).
+    if (request.method === "GET" && url.pathname === "/privacy") {
+      return new Response(PRIVACY_HTML, {
+        headers: { "content-type": "text/html; charset=utf-8" },
+      });
+    }
+
     if (request.method !== "POST" || url.pathname !== "/estimate") {
       return json({ error: "not found" }, 404);
     }
@@ -161,3 +169,61 @@ function json(payload: unknown, status = 200): Response {
     headers: { "content-type": "application/json" },
   });
 }
+
+const PRIVACY_HTML = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PICKLE Privacy Policy</title>
+<style>
+  body { background:#000; color:#e8e8e8; font: 17px/1.6 -apple-system, system-ui, sans-serif;
+         max-width: 640px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 28px; } h2 { font-size: 20px; margin-top: 2em; color: #fff; }
+  p, li { color:#a3a3a3; } strong { color:#e8e8e8; }
+  a { color:#e8e8e8; }
+</style>
+</head>
+<body>
+<h1>PICKLE Privacy Policy</h1>
+<p>Effective July 4, 2026</p>
+
+<p><strong>The short version: your data stays on your phone.</strong> PICKLE has no
+accounts, no sign-up, no analytics, and no advertising. We cannot see your food diary,
+your weight, or anything else you enter.</p>
+
+<h2>Data stored on your device</h2>
+<p>Your food diary, calorie and macro targets, body stats, weight entries, saved foods
+and meals, and reminder settings are stored locally on your iPhone. They are included
+in your device backups under your control. You can export everything (CSV/JSON) or
+permanently delete all data at any time from About &amp; Privacy inside the app.</p>
+
+<h2>AI meal estimation (the one exception)</h2>
+<p>When you choose AI logging, the meal description you type or the photo you take is
+sent over an encrypted connection to our server, which forwards it to an AI provider
+(Anthropic) to estimate the foods and macros. The request is processed and the result
+returned; we do not store your descriptions or photos, and they are not used to train
+models. Nothing is ever sent unless you explicitly use the AI logging feature.</p>
+
+<h2>Apple Health</h2>
+<p>With your permission, PICKLE can read your body weight from Apple Health and save
+the nutrition you log back to Apple Health. Health data is handled entirely on your
+device under Apple's HealthKit rules, is never transmitted to us, and you can revoke
+access anytime in the Health app.</p>
+
+<h2>Notifications</h2>
+<p>Meal reminders are local notifications scheduled on your device. They use generic
+wording; what you eat never appears on your lock screen.</p>
+
+<h2>What we do not do</h2>
+<ul>
+<li>No accounts, no personal identifiers collected</li>
+<li>No analytics, tracking, or third-party SDKs</li>
+<li>No selling or sharing of data with anyone</li>
+</ul>
+
+<h2>Changes and contact</h2>
+<p>If this policy changes, the update will be posted at this address. Questions:
+<a href="mailto:advegaf@tamu.edu">advegaf@tamu.edu</a>.</p>
+</body>
+</html>`;
