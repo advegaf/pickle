@@ -19,6 +19,14 @@ Deferred items with context. Effort scale: human team -> with Claude Code.
 - [ ] **Remove ANTHROPIC_API_KEY from Info.plist** (P1, S)
   `project.yml` injects `PickleAnthropicKey: $(ANTHROPIC_API_KEY)` into the app's Info.plist: a raw key in a plaintext, extractable location. Pre-existing (not from the redesign). Fix: route all Anthropic calls through the Cloudflare proxy (`PickleProxyURL` already exists) and delete the key from client builds. Blocked by: proxy deploy.
 
+## From the ship track (2026-07-04)
+
+- [ ] **Proxy abuse protection** (P1, S)
+  The Worker ships with no auth. Add rate limiting (Cloudflare WAF rule or KV counter) and/or DeviceCheck/App Attest before any build reaches strangers. Start: `proxy/src/index.ts`.
+
+- [ ] **USDA FDC /search behind the proxy** (P2, M)
+  FoodSearchService currently skips USDA ("lives behind the proxy... until the proxy exists"). Add a `/search` passthrough in the Worker + the app-side code path. Start: `Pickle/Services/FoodSearchService.swift`, `proxy/src/index.ts`.
+
 ## Pre-existing (from v1)
 
 - [ ] **Deploy Cloudflare Worker proxy** (P1, M) - holds Anthropic + USDA keys; set `PICKLE_PROXY_URL`; unblocks real AI logging and the API-key removal above.
