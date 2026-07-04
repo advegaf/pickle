@@ -45,7 +45,7 @@ struct QuickAddView: View {
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.top, Spacing.l)
-            .padding(.bottom, 120)
+            .padding(.bottom, Spacing.l)
         }
         .background(Palette.background)
         .safeAreaInset(edge: .bottom) {
@@ -79,16 +79,16 @@ struct MealRowPicker: View {
     @Binding var meal: MealSlot
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Add to")
+            SectionLabel(text: "Add to")
             HStack(spacing: Spacing.s) {
                 ForEach(MealSlot.allCases) { m in
                     let active = meal == m
                     Button { meal = m; Haptics.select() } label: {
                         Text(m.title)
                             .font(PickleFont.button(13))
-                            .foregroundStyle(active ? Palette.background : Palette.secondary)
+                            .foregroundStyle(active ? Palette.onAccent : Palette.secondary)
                             .frame(maxWidth: .infinity, minHeight: 40)
-                            .background(active ? Palette.primary : Palette.surface)
+                            .background(active ? Color.white : Palette.surface)
                             .clipShape(RoundedRectangle(cornerRadius: Radius.button))
                     }
                     .buttonStyle(.pressable)

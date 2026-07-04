@@ -75,22 +75,21 @@ struct ProfileView: View {
             row("Activity", profile.activity.title)
         }
         .padding(Spacing.l)
-        .background(Palette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+        .glassCard()
     }
 
     private var planCard: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Your plan")
+            SectionLabel(text: "Your plan")
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("\(profile.targets.kcal)")
                     .font(PickleFont.stat(40)).foregroundStyle(Palette.primary).monospacedDigit()
                 Text("cal / day").font(PickleFont.body()).foregroundStyle(Palette.tertiary)
             }
             HStack(spacing: Spacing.m) {
-                macroChip("Protein", profile.targets.proteinG)
-                macroChip("Carbs", profile.targets.carbsG)
-                macroChip("Fat", profile.targets.fatG)
+                MacroChip(value: "\(profile.targets.proteinG)g", label: "Protein", tint: Palette.protein)
+                MacroChip(value: "\(profile.targets.carbsG)g", label: "Carbs", tint: Palette.carbs)
+                MacroChip(value: "\(profile.targets.fatG)g", label: "Fat", tint: Palette.fat)
             }
         }
     }
@@ -112,17 +111,6 @@ struct ProfileView: View {
     }
 
     private var divider: some View { Divider().overlay(Palette.hairline) }
-
-    private func macroChip(_ label: String, _ grams: Int) -> some View {
-        VStack(spacing: 2) {
-            Text("\(grams)g").font(PickleFont.bodyMedium(17)).foregroundStyle(Palette.primary).monospacedDigit()
-            Text(label).font(PickleFont.caption(11)).foregroundStyle(Palette.tertiary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, Spacing.m)
-        .background(Palette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
-    }
 
     private var initials: String {
         let parts = profile.name.split(separator: " ")

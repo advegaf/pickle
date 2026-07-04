@@ -14,28 +14,61 @@ struct DesignSystemGallery: View {
                 VStack(alignment: .leading, spacing: Spacing.xxl) {
                     header
 
-                    group("DAILY FUEL") {
-                        DailyFuelCard(consumed: 1150, target: 2200,
-                                      protein: (85, 140), carbs: (120, 240), fat: (40, 70),
-                                      mealsLogged: 2, mealsTotal: 4)
+                    group("Arc gauge") {
+                        VStack(spacing: Spacing.xl) {
+                            ArcGauge(consumed: 1023, target: 2000, diameter: 200)
+                            ArcGauge(consumed: 2134, target: 2000, diameter: 160)
+                            ArcGauge(consumed: 0, target: 2000, diameter: 160, isEmptyDay: true)
+                            ArcGauge(consumed: 0, target: 0, diameter: 160, hasData: false)
+                        }
+                        .frame(maxWidth: .infinity)
                     }
 
-                    group("MILESTONE") {
+                    group("Macro cards") {
+                        MacroCardRow(
+                            consumed: MacroTargets(kcal: 1023, proteinG: 86, carbsG: 142, fatG: 41),
+                            targets: MacroTargets(kcal: 2000, proteinG: 180, carbsG: 220, fatG: 70)
+                        )
+                    }
+
+                    group("Week strip") {
+                        WeekStrip(
+                            today: "2026-07-03",
+                            selected: "2026-07-03",
+                            dayKcal: ["2026-06-29": 1800, "2026-07-01": 2100, "2026-07-02": 1650],
+                            onSelect: { _ in }
+                        )
+                    }
+
+                    group("Chips") {
+                        HStack(spacing: Spacing.m) {
+                            StreakChip(streak: 13)
+                            StreakChip(streak: 0)
+                            BellChip(missed: 2) {}
+                            BellChip(missed: 0) {}
+                        }
+                        HStack(spacing: Spacing.m) {
+                            MacroChip(value: "180g", label: "Protein", tint: Palette.protein)
+                            MacroChip(value: "220g", label: "Carbs", tint: Palette.carbs)
+                            MacroChip(value: "70g", label: "Fat", tint: Palette.fat)
+                        }
+                    }
+
+                    group("Milestone") {
                         MilestoneBanner(title: "3-day streak",
                                         subtitle: "You're building momentum. Keep going.") {}
                     }
 
-                    group("RING + DOTS") {
-                        HStack(spacing: Spacing.xxl) {
-                            KcalRing(consumed: 1700, target: 2200, diameter: 120)
-                            VStack(alignment: .leading, spacing: Spacing.l) {
-                                MealDots(logged: 3, total: 4)
-                                KcalRing(consumed: 0, target: 2200, diameter: 84, hasData: false)
-                            }
+                    group("Macro bars") {
+                        VStack(alignment: .leading, spacing: Spacing.m) {
+                            MacroBar(label: "Protein", short: "P", value: 85, target: 140, tint: Palette.protein)
+                            MacroBar(label: "Carbs", short: "C", value: 120, target: 240, tint: Palette.carbs)
+                            MacroBar(label: "Fat", short: "F", value: 40, target: 70, tint: Palette.fat)
                         }
+                        MacroLine(macros: MacroTargets(kcal: 520, proteinG: 30, carbsG: 40, fatG: 20))
                     }
 
-                    group("CALENDAR DAY STATES") {
+                    group("Calendar day states") {
                         HStack(spacing: Spacing.l) {
                             CalendarDayCircle(day: 8, state: .goalHit)
                             CalendarDayCircle(day: 9, state: .logged)
@@ -45,7 +78,7 @@ struct DesignSystemGallery: View {
                         }
                     }
 
-                    group("STATS") {
+                    group("Stats") {
                         HStack {
                             StatBlock(number: "3", label: "Day streak")
                             StatBlock(number: "12", label: "Days logged")
@@ -53,7 +86,7 @@ struct DesignSystemGallery: View {
                         }
                     }
 
-                    group("PHOTO CARDS") {
+                    group("Photo cards") {
                         HStack(spacing: Spacing.m) {
                             PhotoCard(title: "High Protein", subtitle: "24 meals",
                                       eyebrow: "Collection", seed: 1, height: 180)
@@ -62,7 +95,7 @@ struct DesignSystemGallery: View {
                         }
                     }
 
-                    group("GROUPED LIST") {
+                    group("Grouped list") {
                         GroupedListCard {
                             ListRow(icon: .favorite, title: "Favorites")
                             ListRowDivider()
@@ -70,7 +103,7 @@ struct DesignSystemGallery: View {
                         }
                     }
 
-                    group("BUTTONS") {
+                    group("Buttons") {
                         VStack(spacing: Spacing.m) {
                             PrimaryButton(title: "Continue") {}
                             SecondaryButton(title: "Create custom food") {}
@@ -78,7 +111,7 @@ struct DesignSystemGallery: View {
                         }
                     }
 
-                    group("INPUTS") {
+                    group("Inputs") {
                         VStack(spacing: Spacing.xl) {
                             UnderlineField(label: "First name", text: $name)
                             UtilityStepper(label: "Calories", value: $kcal, step: 10, unit: "cal")
@@ -89,7 +122,7 @@ struct DesignSystemGallery: View {
                         }
                     }
 
-                    group("CATEGORY + LOADER") {
+                    group("Category + loader") {
                         HStack(spacing: Spacing.m) {
                             CategoryButton(title: "HIIT") {}
                             CategoryButton(title: "Strength") {}
@@ -98,7 +131,7 @@ struct DesignSystemGallery: View {
                     }
                 }
                 .padding(Spacing.screen)
-                .padding(.bottom, 120)
+                .padding(.bottom, Spacing.l)
             }
 
             VStack {
@@ -125,7 +158,7 @@ struct DesignSystemGallery: View {
     @ViewBuilder
     private func group<Content: View>(_ title: String, @ViewBuilder _ content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: title)
+            SectionLabel(text: title)
             content()
         }
     }

@@ -55,7 +55,7 @@ struct RecalculateSheet: View {
                 }
                 .padding(.horizontal, Spacing.screen)
                 .padding(.top, Spacing.l)
-                .padding(.bottom, 120)
+                .padding(.bottom, Spacing.l)
             }
             .background(Palette.background)
             .navigationTitle("Recalculate")
@@ -90,8 +90,7 @@ struct RecalculateSheet: View {
                 .font(PickleFont.stat(48)).foregroundStyle(Palette.primary).monospacedDigit()
                 .contentTransition(.numericText(value: Double(newPlan.kcal)))
                 .animation(Motion.easeOut, value: newPlan.kcal)
-            Text("PROJECTED DAILY CALORIES")
-                .font(PickleFont.eyebrow(11)).tracking(2).foregroundStyle(Palette.tertiary)
+            SectionLabel(text: "Projected daily calories", color: Palette.tertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, Spacing.l)
@@ -99,7 +98,7 @@ struct RecalculateSheet: View {
 
     private func section<C: View>(_ title: String, @ViewBuilder _ content: () -> C) -> some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: title)
+            SectionLabel(text: title)
             content()
         }
     }

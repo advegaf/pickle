@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Shared layout for a data-collection step: an all-caps display title, optional subtitle,
+/// Shared layout for a data-collection step: a sentence-case display title, optional subtitle,
 /// scrollable content, and a pinned primary button.
 struct OnboardingScaffold<Content: View>: View {
     let title: String
@@ -15,7 +15,7 @@ struct OnboardingScaffold<Content: View>: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.xl) {
                     VStack(alignment: .leading, spacing: Spacing.s) {
-                        Text(title.uppercased())
+                        Text(title)
                             .font(PickleFont.onboarding(32))
                             .foregroundStyle(Palette.primary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -63,22 +63,21 @@ struct SelectableCard: View {
                 Spacer()
                 ZStack {
                     Circle()
-                        .stroke(selected ? Palette.primary : Palette.faint, lineWidth: 1.5)
+                        .stroke(selected ? Palette.accent : Palette.faint, lineWidth: 1.5)
                         .frame(width: 22, height: 22)
                     if selected {
-                        Circle().fill(Palette.primary).frame(width: 22, height: 22)
+                        Circle().fill(Palette.accent).frame(width: 22, height: 22)
                         PickleIcon(.check, size: 12)
-                            .foregroundStyle(Palette.background)
+                            .foregroundStyle(Palette.onAccent)
                     }
                 }
             }
             .padding(Spacing.l)
             .frame(maxWidth: .infinity)
-            .background(Palette.surface)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+            .glassCard()
             .overlay(
                 RoundedRectangle(cornerRadius: Radius.card)
-                    .stroke(selected ? Palette.primary.opacity(0.6) : .clear, lineWidth: 1)
+                    .stroke(selected ? Palette.accent : .clear, lineWidth: 1)
             )
         }
         .buttonStyle(.pressable)
@@ -100,9 +99,9 @@ struct SegmentedPicker<T: Hashable>: View {
                 } label: {
                     Text(option.label)
                         .font(PickleFont.button(15))
-                        .foregroundStyle(active ? Palette.background : Palette.secondary)
+                        .foregroundStyle(active ? Palette.onAccent : Palette.secondary)
                         .frame(maxWidth: .infinity, minHeight: 44)
-                        .background(active ? Palette.primary : .clear)
+                        .background(active ? Color.white : .clear)
                         .clipShape(RoundedRectangle(cornerRadius: Radius.button))
                 }
                 .buttonStyle(.pressable)

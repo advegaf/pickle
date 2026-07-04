@@ -24,7 +24,7 @@ struct CustomFoodView: View {
                 }
 
                 VStack(alignment: .leading, spacing: Spacing.m) {
-                    Eyebrow(text: "Nutrition per serving")
+                    SectionLabel(text: "Nutrition per serving")
                     UtilityStepper(label: "Serving size", value: $servingGrams, step: 5, range: 1...2000, unit: "g")
                     UtilityStepper(label: "Calories", value: $kcal, step: 10, range: 0...5000, unit: "cal")
                     HStack(spacing: Spacing.l) {
@@ -39,7 +39,7 @@ struct CustomFoodView: View {
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.top, Spacing.l)
-            .padding(.bottom, 120)
+            .padding(.bottom, Spacing.l)
         }
         .background(Palette.background)
         .navigationTitle("Custom food")

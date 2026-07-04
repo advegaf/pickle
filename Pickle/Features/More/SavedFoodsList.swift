@@ -114,7 +114,6 @@ struct ExportView: View {
         }
         .padding(Spacing.l)
         .frame(maxWidth: .infinity)
-        .background(Palette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+        .glassCard()
     }
 }

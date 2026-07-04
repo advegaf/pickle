@@ -49,10 +49,8 @@ struct KcalRing: View {
                     .animation(reduceMotion ? nil : Motion.ringGrow, value: centerValue)
                     .animation(reduceMotion ? nil : Motion.easeOut, value: over > 0)
                 Text(over > 0 ? "over" : "left")
-                    .font(PickleFont.eyebrow(11))
-                    .tracking(1.5)
+                    .font(PickleFont.caption(11))
                     .foregroundStyle(over > 0 ? Palette.over : Palette.tertiary)
-                    .textCase(.uppercase)
             }
         }
         .frame(width: diameter, height: diameter)
@@ -86,7 +84,7 @@ struct MacroBar: View {
     var body: some View {
         HStack(spacing: Spacing.s) {
             Text(short)
-                .font(PickleFont.eyebrow(11))
+                .font(PickleFont.caption(11))
                 .foregroundStyle(Palette.tertiary)
                 .frame(width: 12, alignment: .leading)
 

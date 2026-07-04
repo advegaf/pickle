@@ -69,7 +69,7 @@ struct SearchView: View {
             TextField("Search foods", text: $vm.query)
                 .font(PickleFont.body(17))
                 .foregroundStyle(Palette.primary)
-                .tint(Palette.primary)
+                .tint(Palette.accent)
                 .focused($focused)
                 .autocorrectionDisabled()
                 .submitLabel(.search)
@@ -147,7 +147,7 @@ struct SearchView: View {
     }
 
     private func sectionHeader(_ title: String) -> some View {
-        Eyebrow(text: title)
+        SectionLabel(text: title)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, Spacing.s)
     }
@@ -193,7 +193,7 @@ struct FoodRow: View {
                 }
                 Spacer()
                 PickleIcon(.add, size: 15)
-                    .foregroundStyle(Palette.primary)
+                    .foregroundStyle(Palette.accent)
                     .frame(width: 32, height: 32)
             }
             .frame(minHeight: 56)

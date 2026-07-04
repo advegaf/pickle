@@ -39,8 +39,8 @@ struct ScanView: View {
     private var reticleOverlay: some View {
         VStack {
             Spacer()
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Palette.primary.opacity(0.9), lineWidth: 2)
+            RoundedRectangle(cornerRadius: Radius.chip)
+                .stroke(Palette.accent.opacity(0.9), lineWidth: 2)
                 .frame(width: 260, height: 150)
             Text("Point at a barcode")
                 .font(PickleFont.caption())

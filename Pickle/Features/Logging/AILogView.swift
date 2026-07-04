@@ -60,7 +60,7 @@ struct AILogView: View {
             }
             .frame(height: 120)
             .background(Palette.surface)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.button))
             .padding(.horizontal, Spacing.screen)
 
             PhotosPicker(selection: $photoItem, matching: .images) {
@@ -71,7 +71,7 @@ struct AILogView: View {
                 .font(PickleFont.button(15))
                 .foregroundStyle(Palette.primary)
                 .frame(maxWidth: .infinity, minHeight: 48)
-                .overlay(RoundedRectangle(cornerRadius: Radius.button)
+                .overlay(Capsule()
                     .stroke(Palette.primary.opacity(0.4), lineWidth: 1))
             }
             .padding(.horizontal, Spacing.screen)
@@ -122,7 +122,7 @@ struct AILogView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     HStack {
-                        Eyebrow(text: "Estimated   \(items.count) items")
+                        SectionLabel(text: "Estimated   \(items.count) items")
                         Spacer()
                         Text("\(totalKcal) cal")
                             .font(PickleFont.bodyMedium(15))
@@ -141,7 +141,7 @@ struct AILogView: View {
                 }
                 .padding(.horizontal, Spacing.screen)
                 .padding(.top, Spacing.m)
-                .padding(.bottom, 120)
+                .padding(.bottom, Spacing.l)
             }
             .safeAreaInset(edge: .bottom) {
                 PrimaryButton(title: "Add \(confirmedCount) to log", enabled: confirmedCount > 0) { addAll() }
@@ -158,7 +158,7 @@ struct AILogView: View {
             PickleIcon(.alert, size: 36)
                 .foregroundStyle(Palette.tertiary)
             Text(message)
-                .font(PickleFont.bodyMedium(16)).foregroundStyle(Palette.primary)
+                .font(PickleFont.bodyMedium(16)).foregroundStyle(Palette.over)
                 .multilineTextAlignment(.center)
             SecondaryButton(title: "Try again") { phase = .input }
                 .frame(maxWidth: 220)
@@ -261,10 +261,10 @@ struct AIItemCard: View {
                     Button { item.needsReview = false; Haptics.select() } label: {
                         Text("Confirm")
                             .font(PickleFont.button(12))
-                            .foregroundStyle(Palette.background)
+                            .foregroundStyle(Palette.onAccent)
                             .padding(.horizontal, Spacing.m)
                             .frame(height: 28)
-                            .background(Palette.primary)
+                            .background(Color.white)
                             .clipShape(Capsule())
                     }
                     .buttonStyle(.pressable)
@@ -272,10 +272,9 @@ struct AIItemCard: View {
             }
         }
         .padding(Spacing.m)
-        .background(Palette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+        .glassCard(radius: 20)
         .overlay(
-            RoundedRectangle(cornerRadius: Radius.card)
+            RoundedRectangle(cornerRadius: 20)
                 .stroke(item.needsReview ? Palette.tertiary.opacity(0.4) : .clear, lineWidth: 1)
         )
         .opacity(item.needsReview ? 0.85 : 1)

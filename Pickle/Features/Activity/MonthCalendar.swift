@@ -47,7 +47,7 @@ struct MonthCalendar: View {
         HStack(spacing: 0) {
             ForEach(Array(weekdays.enumerated()), id: \.offset) { _, d in
                 Text(d)
-                    .font(PickleFont.eyebrow(11))
+                    .font(PickleFont.caption(11))
                     .foregroundStyle(Palette.tertiary)
                     .frame(maxWidth: .infinity)
             }

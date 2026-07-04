@@ -59,14 +59,48 @@ struct BellChip: View {
     }
 }
 
+/// One macro as a small stat chip ("142g" over "Carbs"), used in plan and summary
+/// cards (Coach, Profile, day detail). Replaces three hand-rolled copies.
+struct MacroChip: View {
+    let value: String
+    let label: String
+    var tint: Color = Palette.primary
+
+    var body: some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(PickleFont.bodyMedium(16))
+                .foregroundStyle(tint)
+                .monospacedDigit()
+            Text(label)
+                .font(PickleFont.caption(11))
+                .foregroundStyle(Palette.tertiary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Spacing.m)
+        .background(Palette.surfaceRaised)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.chip))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(label): \(value)")
+    }
+}
+
 #Preview {
     ZStack {
         Palette.background.ignoresSafeArea()
-        HStack {
-            StreakChip(streak: 13)
-            StreakChip(streak: 0)
-            BellChip(missed: 2) {}
-            BellChip(missed: 0) {}
+        VStack(spacing: Spacing.l) {
+            HStack {
+                StreakChip(streak: 13)
+                StreakChip(streak: 0)
+                BellChip(missed: 2) {}
+                BellChip(missed: 0) {}
+            }
+            HStack(spacing: Spacing.m) {
+                MacroChip(value: "180g", label: "Protein", tint: Palette.protein)
+                MacroChip(value: "220g", label: "Carbs", tint: Palette.carbs)
+                MacroChip(value: "70g", label: "Fat", tint: Palette.fat)
+            }
         }
+        .padding(Spacing.screen)
     }
 }

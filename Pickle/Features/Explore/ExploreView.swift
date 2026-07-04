@@ -21,7 +21,7 @@ struct ExploreView: View {
                 categories.pickleEntrance(index: 2)
             }
             .padding(.horizontal, Spacing.screen)
-            .padding(.bottom, 120)
+            .padding(.bottom, Spacing.l)
         }
         .background(Palette.background)
         .sheet(item: $recipe) { r in
@@ -40,7 +40,7 @@ struct ExploreView: View {
 
     private var recipes: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Recipes")
+            SectionLabel(text: "Recipes")
             LazyVGrid(columns: columns, spacing: Spacing.m) {
                 ForEach(Recipe.all) { r in
                     RecipeCard(recipe: r) { recipe = r; Haptics.select() }
@@ -51,7 +51,7 @@ struct ExploreView: View {
 
     private var categories: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Browse by category")
+            SectionLabel(text: "Browse by category")
             LazyVGrid(columns: columns, spacing: Spacing.m) {
                 ForEach(FoodCategory.allCases) { cat in
                     CategoryButton(title: cat.rawValue) {
@@ -138,7 +138,7 @@ struct RecipeDetailView: View {
                     }
 
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Eyebrow(text: "Ingredients")
+                        SectionLabel(text: "Ingredients")
                         VStack(spacing: 0) {
                             ForEach(recipe.items) { item in
                                 HStack {
@@ -156,8 +156,7 @@ struct RecipeDetailView: View {
                             }
                         }
                         .padding(Spacing.l)
-                        .background(Palette.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+                        .glassCard()
                     }
                 }
                 .padding(.horizontal, Spacing.screen)

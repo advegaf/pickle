@@ -68,7 +68,7 @@ struct LovedMealsList: View {
                     PickleIcon(justLogged == meal.id ? .check : .add, size: 13)
                     Text(justLogged == meal.id ? "Added" : "Log").font(PickleFont.button(13))
                 }
-                .foregroundStyle(Palette.background)
+                .foregroundStyle(Palette.onAccent)
                 .padding(.horizontal, Spacing.m)
                 .frame(height: 34)
                 .background(Palette.primary)
@@ -101,7 +101,7 @@ private struct MealSlotPickerSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.l) {
             VStack(alignment: .leading, spacing: 4) {
-                Eyebrow(text: "Log to")
+                SectionLabel(text: "Log to")
                 Text(mealName)
                     .font(PickleFont.heading(22))
                     .foregroundStyle(Palette.primary)
@@ -115,7 +115,7 @@ private struct MealSlotPickerSheet: View {
                             .foregroundStyle(Palette.primary)
                             .frame(maxWidth: .infinity, minHeight: 52)
                             .background(Palette.surface)
-                            .clipShape(RoundedRectangle(cornerRadius: Radius.button))
+                            .clipShape(Capsule())
                     }
                     .buttonStyle(.pressable)
                 }

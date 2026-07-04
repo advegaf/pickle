@@ -53,7 +53,7 @@ struct MoreView: View {
                 }
             }
             .padding(.horizontal, Spacing.screen)
-            .padding(.bottom, 120)
+            .padding(.bottom, Spacing.l)
         }
         .background(Palette.background)
         .sheet(item: $route) { r in
@@ -178,8 +178,7 @@ struct AppleHealthView: View {
                     }
                 }
                 .padding(Spacing.l)
-                .background(Palette.surface)
-                .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+                .glassCard()
             }
 
             TextLink(title: "Manage in the Settings app") {
@@ -215,7 +214,7 @@ struct AboutView: View {
                     .font(PickleFont.body(16)).foregroundStyle(Palette.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Eyebrow(text: "Privacy")
+                SectionLabel(text: "Privacy")
                 Text("Your diary and health data stay on your device and sync privately through your iCloud. There's no account and no server holding your numbers.")
                     .font(PickleFont.body(15)).foregroundStyle(Palette.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -223,7 +222,7 @@ struct AboutView: View {
                     .font(PickleFont.body(14)).foregroundStyle(Palette.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Eyebrow(text: "Your data").padding(.top, Spacing.s)
+                SectionLabel(text: "Your data").padding(.top, Spacing.s)
                 Button { confirmDelete = true } label: {
                     HStack(spacing: Spacing.s) {
                         PickleIcon(.delete, size: 15)
@@ -232,7 +231,7 @@ struct AboutView: View {
                     .font(PickleFont.button(14))
                     .foregroundStyle(Palette.over)
                     .frame(maxWidth: .infinity, minHeight: 48)
-                    .overlay(RoundedRectangle(cornerRadius: Radius.button)
+                    .overlay(Capsule()
                         .stroke(Palette.over.opacity(0.4), lineWidth: 1))
                 }
                 .buttonStyle(.pressable)
@@ -248,7 +247,7 @@ struct AboutView: View {
                     }
                     #endif
                 }
-                .font(PickleFont.caption()).foregroundStyle(Palette.faint)
+                .font(PickleFont.caption()).foregroundStyle(Palette.tertiary)
                 .padding(.top, Spacing.l)
             }
             .padding(Spacing.screen)

@@ -16,7 +16,7 @@ struct HeroStep: View {
                 Spacer()
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Wordmark(size: 16)
-                    Text("FUEL YOUR\nPURSUIT.")
+                    Text("Fuel your\npursuit.")
                         .font(PickleFont.onboarding(40))
                         .foregroundStyle(Palette.primary)
                         .lineSpacing(2)
@@ -191,7 +191,7 @@ struct BodyStatsStep: View {
                            onContinue: onContinue) {
             VStack(alignment: .leading, spacing: Spacing.xl) {
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Eyebrow(text: "Sex")
+                    SectionLabel(text: "Sex")
                     SegmentedPicker(options: [(Sex.male, "Male"), (Sex.female, "Female")],
                                     selection: $draft.sex)
                 }
@@ -200,7 +200,7 @@ struct BodyStatsStep: View {
 
                 VStack(alignment: .leading, spacing: Spacing.s) {
                     HStack {
-                        Eyebrow(text: "Units")
+                        SectionLabel(text: "Units")
                         Spacer()
                         SegmentedPicker(options: [(true, "Imperial"), (false, "Metric")],
                                         selection: $imperial)
@@ -246,7 +246,7 @@ struct ImperialHeight: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            Eyebrow(text: "Height")
+            SectionLabel(text: "Height")
             HStack(spacing: Spacing.l) {
                 UtilityStepper(label: "Feet", value: feetBinding, step: 1, range: 3...8, unit: "ft")
                 UtilityStepper(label: "Inches", value: inchBinding, step: 1, range: 0...11, unit: "in")
@@ -287,7 +287,7 @@ struct GoalStep: View {
 
                 if draft.goal != .maintain {
                     VStack(alignment: .leading, spacing: Spacing.s) {
-                        Eyebrow(text: draft.goal == .lose ? "Weekly loss" : "Weekly gain")
+                        SectionLabel(text: draft.goal == .lose ? "Weekly loss" : "Weekly gain")
                         SegmentedPicker(options: rates.map { ($0, rateLabel($0)) },
                                         selection: $draft.weeklyRateKg)
                     }
@@ -374,7 +374,7 @@ struct ReviewStep: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.xl) {
                     VStack(alignment: .leading, spacing: Spacing.s) {
-                        Eyebrow(text: "Your daily plan")
+                        SectionLabel(text: "Your daily plan")
                         Text("Here's where you'll\nstart, \(draft.name).")
                             .font(PickleFont.display(30))
                             .foregroundStyle(Palette.primary)
@@ -387,9 +387,8 @@ struct ReviewStep: View {
                                 .font(PickleFont.stat(56))
                                 .foregroundStyle(Palette.primary)
                                 .monospacedDigit()
-                            Text("CALORIES PER DAY")
-                                .font(PickleFont.eyebrow(11))
-                                .tracking(2)
+                            Text("Calories per day")
+                                .font(PickleFont.label(11))
                                 .foregroundStyle(Palette.tertiary)
                         }
                         Spacer()
@@ -429,9 +428,8 @@ struct BuildingStep: View {
         VStack(spacing: Spacing.xl) {
             Spacer()
             DotLoader(size: 56, dot: 12, done: done)
-            Text(done ? "PLAN READY" : "BUILDING YOUR PLAN")
-                .font(PickleFont.eyebrow(13))
-                .tracking(3)
+            Text(done ? "Plan ready" : "Building your plan")
+                .font(PickleFont.label(13))
                 .foregroundStyle(Palette.primary)
                 .contentTransition(.opacity)
             Spacer()

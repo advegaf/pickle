@@ -31,7 +31,7 @@ struct CoachView: View {
                 }
                 .padding(.horizontal, Spacing.screen)
             }
-            .padding(.bottom, 120)
+            .padding(.bottom, Spacing.l)
         }
         .background(Palette.background)
         .ignoresSafeArea(edges: .top)
@@ -45,7 +45,7 @@ struct CoachView: View {
 
     private var coachCard: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Your coach")
+            SectionLabel(text: "Your coach")
             Group {
                 if let advice = coachAdvice {
                     Text(advice)
@@ -75,8 +75,7 @@ struct CoachView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Spacing.l)
-            .background(Palette.surface)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+            .glassCard()
         }
         .animation(Motion.easeOut, value: coachAdvice)
         .animation(Motion.easeOut, value: coachLoading)
@@ -116,7 +115,7 @@ struct CoachView: View {
             TreatedImage(asset: "coach-hero", seed: 9)
             LinearGradient(colors: [.clear, .black.opacity(0.9)], startPoint: .center, endPoint: .bottom)
             VStack(alignment: .leading, spacing: Spacing.s) {
-                Eyebrow(text: "Coach", color: Palette.secondary)
+                SectionLabel(text: "Coach", color: Palette.secondary)
                 Text("Powering precision\nnutrition.")
                     .font(PickleFont.display(30))
                     .foregroundStyle(Palette.primary)
@@ -133,7 +132,7 @@ struct CoachView: View {
 
     private var adaptiveCard: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Weekly recalibration")
+            SectionLabel(text: "Weekly recalibration")
 
             VStack(alignment: .leading, spacing: Spacing.l) {
                 if adaptive.changed, let maintenance = adaptive.estimatedMaintenanceKcal {
@@ -161,15 +160,14 @@ struct CoachView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Spacing.l)
-            .background(Palette.surface)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+            .glassCard()
         }
     }
 
     private func targetColumn(_ label: String, _ kcal: Int, dim: Bool) -> some View {
         VStack(spacing: 4) {
-            Text(label).font(PickleFont.eyebrow(10)).tracking(1.5)
-                .foregroundStyle(Palette.tertiary).textCase(.uppercase)
+            Text(label).font(PickleFont.label(11))
+                .foregroundStyle(Palette.tertiary)
             Text("\(kcal)")
                 .font(PickleFont.stat(30))
                 .foregroundStyle(dim ? Palette.tertiary : Palette.primary)
@@ -187,7 +185,7 @@ struct CoachView: View {
         let tdee = Int(PlanCalculator.tdee(p).rounded())
         let adj = Int(PlanCalculator.dailyAdjustment(profile.planGoal).rounded())
         return VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Your plan, transparent")
+            SectionLabel(text: "Your plan, transparent")
             VStack(spacing: 0) {
                 mathRow("Base metabolism (BMR)", "\(bmr) cal")
                 mathRow("× \(profile.activity.title.lowercased())", "\(tdee) cal")
@@ -197,8 +195,7 @@ struct CoachView: View {
                 mathRow("Daily target", "\(profile.targets.kcal) cal", emphasis: true)
             }
             .padding(Spacing.l)
-            .background(Palette.surface)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+            .glassCard()
 
             Text(PlanCalculator.basalFormula(p) == .katchMcArdle
                  ? "Calculated with the Katch-McArdle formula from your Apple Health lean body mass, the most accurate basal rate."
@@ -208,9 +205,9 @@ struct CoachView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: Spacing.m) {
-                macroChip("Protein", profile.targets.proteinG)
-                macroChip("Carbs", profile.targets.carbsG)
-                macroChip("Fat", profile.targets.fatG)
+                MacroChip(value: "\(profile.targets.proteinG)g", label: "Protein", tint: Palette.protein)
+                MacroChip(value: "\(profile.targets.carbsG)g", label: "Carbs", tint: Palette.carbs)
+                MacroChip(value: "\(profile.targets.fatG)g", label: "Fat", tint: Palette.fat)
             }
         }
     }
@@ -229,17 +226,6 @@ struct CoachView: View {
         .frame(minHeight: 40)
     }
 
-    private func macroChip(_ label: String, _ grams: Int) -> some View {
-        VStack(spacing: 2) {
-            Text("\(grams)g").font(PickleFont.bodyMedium(17)).foregroundStyle(Palette.primary).monospacedDigit()
-            Text(label).font(PickleFont.caption(11)).foregroundStyle(Palette.tertiary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, Spacing.m)
-        .background(Palette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
-    }
-
     // MARK: Insights
 
     private var insights: some View {
@@ -247,7 +233,7 @@ struct CoachView: View {
         let weights = store.weights()
         let trend = weightTrend(weights)
         return VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "This week")
+            SectionLabel(text: "This week")
             HStack {
                 StatBlock(number: input.avgDailyIntakeKcal > 0 ? "\(Int(input.avgDailyIntakeKcal))" : "-",
                           label: "Avg intake")
@@ -299,7 +285,7 @@ struct QuoteCarousel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Principles")
+            SectionLabel(text: "Principles")
             TabView(selection: $index) {
                 ForEach(Array(shown.enumerated()), id: \.offset) { i, q in
                     Text("\u{201C}\(q)\u{201D}")
@@ -317,7 +303,7 @@ struct QuoteCarousel: View {
             HStack(spacing: 6) {
                 ForEach(shown.indices, id: \.self) { i in
                     Circle()
-                        .fill(i == index ? Palette.primary : Palette.faint.opacity(0.5))
+                        .fill(i == index ? Palette.accent : Palette.faint.opacity(0.5))
                         .frame(width: 6, height: 6)
                 }
             }

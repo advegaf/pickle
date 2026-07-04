@@ -169,9 +169,9 @@ struct ModeSelector: View {
                         .font(PickleFont.button(13))
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
-                        .foregroundStyle(active ? Palette.background : Palette.secondary)
+                        .foregroundStyle(active ? Palette.onAccent : Palette.secondary)
                         .frame(maxWidth: .infinity, minHeight: 40)
-                        .background(active ? Palette.primary : .clear)
+                        .background(active ? Color.white : .clear)
                         .clipShape(RoundedRectangle(cornerRadius: Radius.button))
                 }
                 .buttonStyle(.pressable)

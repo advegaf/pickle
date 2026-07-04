@@ -57,7 +57,7 @@ struct FoodDetailView: View {
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.top, Spacing.l)
-            .padding(.bottom, 120)
+            .padding(.bottom, Spacing.l)
         }
         .background(Palette.background)
         .safeAreaInset(edge: .bottom) {
@@ -124,13 +124,12 @@ struct FoodDetailView: View {
             }
         }
         .padding(Spacing.l)
-        .background(Palette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+        .glassCard()
     }
 
     private var portionControl: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Portion")
+            SectionLabel(text: "Portion")
             HStack(spacing: Spacing.m) {
                 stepButton(.minus) { adjust(-1) }
                 Text(amountLabel)
@@ -166,7 +165,7 @@ struct FoodDetailView: View {
 
     private var mealPicker: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Add to")
+            SectionLabel(text: "Add to")
             HStack(spacing: Spacing.s) {
                 ForEach(MealSlot.allCases) { m in
                     let active = meal == m
@@ -175,9 +174,9 @@ struct FoodDetailView: View {
                     } label: {
                         Text(m.title)
                             .font(PickleFont.button(13))
-                            .foregroundStyle(active ? Palette.background : Palette.secondary)
+                            .foregroundStyle(active ? Palette.onAccent : Palette.secondary)
                             .frame(maxWidth: .infinity, minHeight: 40)
-                            .background(active ? Palette.primary : Palette.surface)
+                            .background(active ? Color.white : Palette.surface)
                             .clipShape(RoundedRectangle(cornerRadius: Radius.button))
                     }
                     .buttonStyle(.pressable)
@@ -202,7 +201,7 @@ struct FoodDetailView: View {
             PickleIcon(glyph, size: 16)
                 .foregroundStyle(Palette.primary)
                 .frame(width: 48, height: 48)
-                .background(Palette.surface)
+                .background(Palette.surfaceRaised)
                 .clipShape(RoundedRectangle(cornerRadius: Radius.button))
         }
         .buttonStyle(.pressable)

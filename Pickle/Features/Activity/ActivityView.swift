@@ -31,7 +31,7 @@ struct ActivityView: View {
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.top, Spacing.s)
-            .padding(.bottom, 120)
+            .padding(.bottom, Spacing.l)
         }
         .background(Palette.background)
         .sheet(isPresented: $showAddWeight) {
@@ -84,7 +84,7 @@ struct ActivityView: View {
 
     private var statsRow: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Eyebrow(text: "Your stats")
+            SectionLabel(text: "Your stats")
             HStack {
                 StatBlock(number: "\(stats.streak)", label: "Day streak")
                 StatBlock(number: "\(stats.daysLogged)", label: "Days logged")
@@ -96,7 +96,7 @@ struct ActivityView: View {
     @ViewBuilder private var insights: some View {
         if stats.daysLogged < 7 {
             VStack(alignment: .leading, spacing: Spacing.s) {
-                Eyebrow(text: "Insights")
+                SectionLabel(text: "Insights")
                 Text("Keep logging, after 7 days, Pickle starts surfacing trends and refining your plan.")
                     .font(PickleFont.body(14))
                     .foregroundStyle(Palette.tertiary)
@@ -109,7 +109,7 @@ struct ActivityView: View {
         let days = store.activeDays()
         return VStack(alignment: .leading, spacing: Spacing.m) {
             if !days.isEmpty {
-                Eyebrow(text: "Active days")
+                SectionLabel(text: "Active days")
                 VStack(spacing: 0) {
                     ForEach(days, id: \.self) { day in
                         Button { selectedDay = day } label: {

@@ -65,6 +65,7 @@ struct SplashView: View {
         ZStack {
             Palette.background.ignoresSafeArea()
             RevealWordmark(size: 24)
+                .shadow(color: Palette.glow, radius: 18)
         }
     }
 }

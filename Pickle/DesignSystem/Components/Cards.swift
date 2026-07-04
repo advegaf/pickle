@@ -187,13 +187,7 @@ struct PhotoCard: View {
     var height: CGFloat = 200
     var action: () -> Void = {}
 
-    // Deliberate, Apple-quality spacing. The rotated eyebrow lives in a fixed narrow left
-    // gutter; the title block is inset past it so the optical left margin reads even on
-    // every card size and the two never crowd.
     private let contentMargin: CGFloat = 16   // base inset from the card edge
-    private let eyebrowInset: CGFloat = 16    // gutter distance from the leading edge
-    private let glyphColumn: CGFloat = 16     // narrow layout column for the rotated label
-    private let titleLeading: CGFloat = 42    // title leading when an eyebrow is present
 
     var body: some View {
         Button(action: action) {
@@ -203,19 +197,12 @@ struct PhotoCard: View {
                     colors: [.clear, .black.opacity(0.85)],
                     startPoint: .center, endPoint: .bottom
                 )
-                if let eyebrow {
-                    Text(eyebrow.uppercased())
-                        .font(PickleFont.eyebrow(10))
-                        .tracking(2)
-                        .foregroundStyle(Palette.primary.opacity(0.85))
-                        .fixedSize()
-                        .rotationEffect(.degrees(-90))
-                        .frame(width: glyphColumn)
-                        .frame(maxHeight: .infinity, alignment: .center)
-                        .padding(.leading, eyebrowInset)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
                 VStack(alignment: .leading, spacing: 4) {
+                    if let eyebrow {
+                        Text(eyebrow)
+                            .font(PickleFont.label(11))
+                            .foregroundStyle(Palette.secondary)
+                    }
                     Text(title)
                         .font(PickleFont.heading(19))
                         .foregroundStyle(Palette.primary)
@@ -226,10 +213,7 @@ struct PhotoCard: View {
                             .foregroundStyle(Palette.secondary)
                     }
                 }
-                .padding(.top, contentMargin)
-                .padding(.bottom, contentMargin)
-                .padding(.trailing, contentMargin)
-                .padding(.leading, eyebrow != nil ? titleLeading : contentMargin)
+                .padding(contentMargin)
             }
             .frame(height: height)
             .frame(maxWidth: .infinity)

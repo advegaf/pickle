@@ -20,15 +20,22 @@ struct CalendarDayCircle: View {
             background
             if state == .goalHit {
                 PickleIcon(.check, size: size * 0.44)
-                    .foregroundStyle(Palette.background)
+                    .foregroundStyle(Palette.onAccent)
             } else {
                 Text("\(day)")
                     .font(PickleFont.font(.medium, size * 0.36, relativeTo: .footnote))
                     .foregroundStyle(numberColor)
                     .monospacedDigit()
             }
+            if state == .logged {
+                // Accent dot marks a logged day, echoing the Home week strip.
+                Circle()
+                    .fill(Palette.accent)
+                    .frame(width: max(3, size * 0.1), height: max(3, size * 0.1))
+                    .offset(y: size * 0.28)
+            }
             if isToday {
-                Circle().stroke(Palette.primary, lineWidth: 1.5)
+                Circle().stroke(Palette.accent, lineWidth: 1)
             }
         }
         .frame(width: size, height: size)
@@ -45,7 +52,7 @@ struct CalendarDayCircle: View {
         case .logged:
             Circle().fill(Palette.surfaceRaised)
         case .goalHit:
-            Circle().fill(Palette.primary)
+            Circle().fill(Palette.accent)
         }
     }
 
@@ -54,7 +61,7 @@ struct CalendarDayCircle: View {
         case .future: return Palette.faint
         case .empty: return Palette.secondary
         case .logged: return Palette.primary
-        case .goalHit: return Palette.background
+        case .goalHit: return Palette.onAccent
         }
     }
 

@@ -59,28 +59,19 @@ struct DayDetailView: View {
                 Text("cal").font(PickleFont.body()).foregroundStyle(Palette.tertiary)
             }
             .frame(maxWidth: .infinity)
-            HStack(spacing: Spacing.xl) {
-                macroStat("Protein", t.proteinG)
-                macroStat("Carbs", t.carbsG)
-                macroStat("Fat", t.fatG)
+            HStack(spacing: Spacing.m) {
+                MacroChip(value: "\(t.proteinG)g", label: "Protein", tint: Palette.protein)
+                MacroChip(value: "\(t.carbsG)g", label: "Carbs", tint: Palette.carbs)
+                MacroChip(value: "\(t.fatG)g", label: "Fat", tint: Palette.fat)
             }
         }
         .padding(Spacing.l)
-        .background(Palette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
-    }
-
-    private func macroStat(_ label: String, _ grams: Int) -> some View {
-        VStack(spacing: 2) {
-            Text("\(grams)g").font(PickleFont.bodyMedium(17)).foregroundStyle(Palette.primary).monospacedDigit()
-            Text(label).font(PickleFont.caption(11)).foregroundStyle(Palette.tertiary)
-        }
-        .frame(maxWidth: .infinity)
+        .glassCard()
     }
 
     private func mealSection(_ meal: MealSlot, _ entries: [LoggedFood]) -> some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            Eyebrow(text: meal.title)
+            SectionLabel(text: meal.title)
             VStack(spacing: 0) {
                 ForEach(entries) { entry in
                     HStack {

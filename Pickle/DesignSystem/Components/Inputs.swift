@@ -19,17 +19,15 @@ struct UnderlineField: View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             ZStack(alignment: .leading) {
                 Text(label)
-                    .font(floated ? PickleFont.eyebrow(11) : PickleFont.body(17))
-                    .tracking(floated ? 1.5 : 0)
+                    .font(floated ? PickleFont.label(11) : PickleFont.body(17))
                     .foregroundStyle(floated ? Palette.tertiary : Palette.secondary)
-                    .textCase(floated ? .uppercase : nil)
                     .offset(y: floated ? -20 : 0)
                     .animation(Motion.easeOut, value: floated)
 
                 TextField("", text: $text)
                     .font(PickleFont.body(17))
                     .foregroundStyle(Palette.primary)
-                    .tint(Palette.primary)
+                    .tint(Palette.accent)
                     .keyboardType(keyboard)
                     .textContentType(contentType)
                     .focused($focused)
@@ -40,7 +38,7 @@ struct UnderlineField: View {
             .padding(.top, 12)
 
             Rectangle()
-                .fill(focused ? Palette.primary : Palette.hairline)
+                .fill(focused ? Palette.accent : Palette.hairline)
                 .frame(height: 1)
                 .animation(Motion.easeOut, value: focused)
         }
@@ -66,7 +64,7 @@ struct UtilityStepper: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            Eyebrow(text: label)
+            SectionLabel(text: label)
             HStack(spacing: Spacing.m) {
                 stepButton(.minus) { set(value - step) }
 
@@ -124,7 +122,7 @@ struct UtilityStepper: View {
             PickleIcon(glyph, size: 16)
                 .foregroundStyle(Palette.primary)
                 .frame(width: 44, height: 44)
-                .background(Palette.surface)
+                .background(Palette.surfaceRaised)
                 .clipShape(RoundedRectangle(cornerRadius: Radius.button))
         }
         .buttonStyle(.pressable)
