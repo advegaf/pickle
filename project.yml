@@ -47,7 +47,6 @@ targets:
         NSPhotoLibraryUsageDescription: "Pickle uses photos of your meals to estimate calories and macros."
         ITSAppUsesNonExemptEncryption: NO
         PickleProxyURL: $(PICKLE_PROXY_URL)
-        PickleAnthropicKey: $(ANTHROPIC_API_KEY)
     entitlements:
       path: Pickle/Pickle.entitlements
       properties:
