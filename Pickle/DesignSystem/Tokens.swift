@@ -82,8 +82,6 @@ enum PickleFont {
     static func heading(_ size: CGFloat = 22) -> Font { scaled(size, relativeTo: .title2, weight: .semibold) }
     /// Sentence-case section label (replaces the ALL-CAPS eyebrow).
     static func label(_ size: CGFloat = 13) -> Font { scaled(size, relativeTo: .footnote, weight: .medium) }
-    /// Transitional alias; call sites migrate to `label`. Removed in the polish pass.
-    static func eyebrow(_ size: CGFloat = 11) -> Font { scaled(size, relativeTo: .caption2, weight: .medium) }
     /// Large stat numeral. Tabular digits so updating numbers never shift layout.
     static func stat(_ size: CGFloat = 40) -> Font {
         scaled(size, relativeTo: .largeTitle, weight: .semibold).monospacedDigit()

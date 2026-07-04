@@ -118,6 +118,13 @@ struct HomeView: View {
         }
         .onAppear { syncDay() }
         .onChange(of: store.revision) { _, _ in refreshDayKcal() }
+        .onChange(of: store.diaryDay(today).totals.kcal) { old, new in
+            // Goal-hit moment: one celebration per crossing, today only.
+            let target = profile.targets.kcal
+            if target > 0, old < target, new >= target {
+                Haptics.celebrate()
+            }
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { syncDay() }
         }

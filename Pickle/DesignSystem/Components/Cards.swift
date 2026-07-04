@@ -99,83 +99,6 @@ extension View {
     }
 }
 
-// MARK: - DAILY FUEL card (Home hero)
-
-struct DailyFuelCard: View {
-    let consumed: Int
-    let target: Int
-    let protein: (Int, Int)
-    let carbs: (Int, Int)
-    let fat: (Int, Int)
-    let mealsLogged: Int
-    let mealsTotal: Int
-    var hasData: Bool = true
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.l) {
-            Eyebrow(text: "Daily Fuel")
-
-            HStack(spacing: Spacing.xl) {
-                KcalRing(consumed: consumed, target: target, diameter: 132, hasData: hasData)
-                VStack(spacing: Spacing.m) {
-                    MacroBar(label: "Protein", short: "P", value: protein.0, target: protein.1, tint: Palette.protein)
-                    MacroBar(label: "Carbs", short: "C", value: carbs.0, target: carbs.1, tint: Palette.carbs)
-                    MacroBar(label: "Fat", short: "F", value: fat.0, target: fat.1, tint: Palette.fat)
-                }
-            }
-
-            Divider().overlay(Palette.hairline)
-
-            HStack {
-                Text(hasData ? "\(consumed) / \(target) cal" : "0 / \(target) cal")
-                    .font(PickleFont.caption())
-                    .foregroundStyle(Palette.secondary)
-                    .monospacedDigit()
-                Spacer()
-                MealDots(logged: mealsLogged, total: mealsTotal)
-            }
-        }
-        .padding(Spacing.l)
-        .background(Palette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
-    }
-}
-
-// MARK: - Milestone banner
-
-struct MilestoneBanner: View {
-    let title: String
-    let subtitle: String
-    var action: (() -> Void)?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.s) {
-            Eyebrow(text: "Milestone")
-            Text(title)
-                .font(PickleFont.display(28))
-                .foregroundStyle(Palette.primary)
-                .fixedSize(horizontal: false, vertical: true)
-            Text(subtitle)
-                .font(PickleFont.body(15))
-                .foregroundStyle(Palette.secondary)
-            if action != nil {
-                Button(action: { action?() }) {
-                    HStack(spacing: 6) {
-                        Text("View")
-                            .font(PickleFont.button(14))
-                            .underline()
-                        PickleIcon(.arrowRight, size: 12)
-                    }
-                    .foregroundStyle(Palette.primary)
-                    .frame(minHeight: 44, alignment: .leading)
-                }
-                .buttonStyle(.pressable)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
 // MARK: - Photo card (Explore / Coach)
 
 struct PhotoCard: View {
@@ -273,18 +196,13 @@ struct GroupedListCard<Content: View>: View {
     @ViewBuilder var content: Content
     var body: some View {
         VStack(spacing: 0) { content }
-            .background(Palette.surface)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+            .glassCard()
     }
 }
 
 #Preview {
     ScrollView {
         VStack(spacing: Spacing.xl) {
-            DailyFuelCard(consumed: 1150, target: 2200,
-                          protein: (85, 140), carbs: (120, 240), fat: (40, 70),
-                          mealsLogged: 2, mealsTotal: 4)
-            MilestoneBanner(title: "3-day streak", subtitle: "You're building momentum. Keep going.") {}
             PhotoCard(title: "High Protein", subtitle: "24 meals", eyebrow: "Collection", seed: 1)
             GroupedListCard {
                 ListRow(icon: .favorite, title: "Favorites")

@@ -54,11 +54,6 @@ struct DesignSystemGallery: View {
                         }
                     }
 
-                    group("Milestone") {
-                        MilestoneBanner(title: "3-day streak",
-                                        subtitle: "You're building momentum. Keep going.") {}
-                    }
-
                     group("Macro bars") {
                         VStack(alignment: .leading, spacing: Spacing.m) {
                             MacroBar(label: "Protein", short: "P", value: 85, target: 140, tint: Palette.protein)

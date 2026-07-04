@@ -22,12 +22,6 @@ struct SectionLabel: View {
     }
 }
 
-/// Transitional alias while call sites migrate to `SectionLabel` (removed in polish).
-struct Eyebrow: View {
-    let text: String
-    var color: Color = Palette.secondary
-    var body: some View { SectionLabel(text: text, color: color) }
-}
 
 // MARK: - Section header
 
@@ -139,7 +133,7 @@ struct CategoryButton: View {
     ZStack {
         Palette.background.ignoresSafeArea()
         VStack(spacing: Spacing.xl) {
-            Eyebrow(text: "Milestone")
+            SectionLabel(text: "Milestone")
             HStack {
                 StatBlock(number: "3", label: "Day streak")
                 StatBlock(number: "12", label: "Days logged")
