@@ -63,10 +63,10 @@ struct SelectableCard: View {
                 Spacer()
                 ZStack {
                     Circle()
-                        .stroke(selected ? Palette.accent : Palette.faint, lineWidth: 1.5)
+                        .stroke(selected ? Palette.primary : Palette.faint, lineWidth: 1.5)
                         .frame(width: 22, height: 22)
                     if selected {
-                        Circle().fill(Palette.accent).frame(width: 22, height: 22)
+                        Circle().fill(Palette.primary).frame(width: 22, height: 22)
                         PickleIcon(.check, size: 12)
                             .foregroundStyle(Palette.onAccent)
                     }
@@ -77,7 +77,7 @@ struct SelectableCard: View {
             .glassCard()
             .overlay(
                 RoundedRectangle(cornerRadius: Radius.card)
-                    .stroke(selected ? Palette.accent : .clear, lineWidth: 1)
+                    .stroke(selected ? Palette.primary.opacity(0.6) : .clear, lineWidth: 1)
             )
         }
         .buttonStyle(.pressable)

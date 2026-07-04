@@ -28,9 +28,9 @@ struct CalendarDayCircle: View {
                     .monospacedDigit()
             }
             if state == .logged {
-                // Accent dot marks a logged day, echoing the Home week strip.
+                // Quiet dot marks a logged day, echoing the Home week strip.
                 Circle()
-                    .fill(Palette.accent)
+                    .fill(Palette.tertiary)
                     .frame(width: max(3, size * 0.1), height: max(3, size * 0.1))
                     .offset(y: size * 0.28)
             }

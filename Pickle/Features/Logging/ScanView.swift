@@ -40,7 +40,7 @@ struct ScanView: View {
         VStack {
             Spacer()
             RoundedRectangle(cornerRadius: Radius.chip)
-                .stroke(Palette.accent.opacity(0.9), lineWidth: 2)
+                .stroke(Palette.primary.opacity(0.9), lineWidth: 2)
                 .frame(width: 260, height: 150)
             Text("Point at a barcode")
                 .font(PickleFont.caption())

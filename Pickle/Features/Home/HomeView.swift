@@ -251,7 +251,7 @@ struct HomeView: View {
                     .foregroundStyle(Palette.onAccent)
                     .padding(.horizontal, Spacing.l)
                     .frame(height: 36)
-                    .background(Palette.accent)
+                    .background(Color.white)
                     .clipShape(Capsule())
             }
             .buttonStyle(.pressable)
@@ -368,7 +368,7 @@ struct MealCard: View {
                 }
                 Spacer()
                 PickleIcon(isEmpty ? .add : .chevronRight, size: isEmpty ? 16 : 13)
-                    .foregroundStyle(isEmpty ? Palette.accent : Palette.tertiary)
+                    .foregroundStyle(isEmpty ? Palette.secondary : Palette.tertiary)
                     .frame(width: 32, height: 32)
             }
             .padding(Spacing.l)

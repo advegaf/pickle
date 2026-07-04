@@ -3,24 +3,17 @@ import UIKit
 
 // MARK: - Glass card
 
-/// The Glow surface recipe, applied ~15x across the app: flat `surface` fill, a 1px
-/// top-edge highlight that fades at the sides, and ONE ambient shadow. Deliberately no
-/// Material: cards are glass-LOOK; only the floating bar and sheets get real glass.
+/// The card surface, applied ~15x across the app: REAL Liquid Glass (user's call at the
+/// review gate), tinted with the neutral surface tone so cards keep a whisper of body
+/// over the pure-black canvas, plus ONE ambient shadow. Rollback point: swap glassEffect
+/// back to a flat `Palette.surface` fill if scroll stutters on device.
 struct GlassCard: ViewModifier {
     var radius: CGFloat = Radius.card
 
     func body(content: Content) -> some View {
         content
-            .background(Palette.surface)
-            .clipShape(RoundedRectangle(cornerRadius: radius))
-            .overlay(
-                RoundedRectangle(cornerRadius: radius)
-                    .strokeBorder(
-                        LinearGradient(colors: [.white.opacity(0.10), .white.opacity(0.02)],
-                                       startPoint: .top, endPoint: .bottom),
-                        lineWidth: 1
-                    )
-            )
+            .glassEffect(.regular.tint(Palette.surface.opacity(0.55)),
+                         in: RoundedRectangle(cornerRadius: radius))
             .shadow(color: .black.opacity(0.35), radius: 24, y: 8)
     }
 }

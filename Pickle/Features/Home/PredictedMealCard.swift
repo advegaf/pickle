@@ -38,7 +38,7 @@ struct PredictedMealCard: View {
             }
             Spacer()
             PickleIcon(.add, size: 16)
-                .foregroundStyle(Palette.accent)
+                .foregroundStyle(Palette.primary)
                 .frame(width: 36, height: 36)
                 .background(Palette.surfaceRaised)
                 .clipShape(Circle())
@@ -66,7 +66,7 @@ struct PredictedMealCard: View {
             PickleIcon(.add, size: 16)
                 .foregroundStyle(Palette.onAccent)
                 .frame(width: 36, height: 36)
-                .background(Palette.accent)
+                .background(Color.white)
                 .clipShape(Circle())
         }
         .padding(Spacing.l)
@@ -74,7 +74,7 @@ struct PredictedMealCard: View {
         .glassCard(radius: 20)
         .overlay(
             RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(Palette.accent.opacity(0.25), lineWidth: 1)
+                .strokeBorder(Palette.hairline, lineWidth: 1)
         )
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Log your first meal to start predictions")

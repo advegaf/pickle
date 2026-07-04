@@ -4,34 +4,36 @@ import SwiftUI
 // widget extension. The app's `Palette` and the widget's `W` both derive from these hex
 // values, so the two can never drift apart silently.
 //
-// Contrast ratios on `background` (asserted in TokensTests): primary 17.6:1,
-// secondary 7.8:1, tertiary 6.1:1, accent 12.0:1, carbs 9.3:1, fat 12.1:1, over 6.9:1.
-// `faint` is 1.9:1 and is therefore restricted to non-interactive decoration.
+// The Ember story: true OLED black, a cold grey/white monochrome base, and ONE warm
+// amber pop used scarcely (the gauge, the flame, today indicators). Contrast on
+// `background` (asserted in TokensTests): primary 21:1, secondary 7.0:1,
+// tertiary 5.2:1, accent ~9.7:1, over ~6:1. `faint` is under 3:1 and is therefore
+// restricted to non-interactive decoration.
 enum PaletteValues {
-    /// Deep green-black canvas.
-    static let background = "0B100F"
-    /// Card / control surface. Separation comes from the glass edge + shadow, not the fill.
-    static let surface = "151E1C"
+    /// True OLED black canvas.
+    static let background = "000000"
+    /// Card / control surface tint (neutral). Cards render as Liquid Glass tinted with this.
+    static let surface = "161616"
     /// Pressed / selected surface.
-    static let surfaceRaised = "1C2725"
-    /// Warm-white primary text. Text intent only; emphasis is `accent`.
-    static let primary = "F2F6F5"
-    /// Teal-gray secondary text.
-    static let secondary = "9BA8A4"
+    static let surfaceRaised = "222222"
+    /// Pure white primary text. Text intent only; emphasis is `accent`.
+    static let primary = "FFFFFF"
+    /// Neutral secondary text.
+    static let secondary = "A3A3A3"
     /// Tertiary text. Lowest token allowed to carry essential text.
-    static let tertiary = "8A948F"
+    static let tertiary = "8A8A8A"
     /// Non-interactive tracks and decoration ONLY. Fails contrast for glyphs and text.
-    static let faint = "3A4441"
-    /// The one accent: aqua teal. Gauge, active states, primary emphasis.
-    static let accent = "4DE3C8"
+    static let faint = "3C3C3C"
+    /// The one accent: ember amber. The gauge, the streak flame, today indicators.
+    static let accent = "FFA24D"
     /// Text and glyphs placed on `accent` or on white controls.
-    static let onAccent = "06211C"
-    /// Macro hues, one family, same luminance band. Protein shares the accent teal.
-    static let protein = "4DE3C8"
-    static let carbs = "4DC2E3"
-    static let fat = "72E3A0"
-    /// Over-goal coral. Also destructive actions and the bell dot.
-    static let over = "FF6B66"
+    static let onAccent = "1F1206"
+    /// Macro bars are monochrome: differentiation by label, not hue.
+    static let protein = "FFFFFF"
+    static let carbs = "FFFFFF"
+    static let fat = "FFFFFF"
+    /// Over-goal red. Clearly red (not orange) so it never reads as the amber accent.
+    static let over = "FF5A5A"
 }
 
 extension Color {

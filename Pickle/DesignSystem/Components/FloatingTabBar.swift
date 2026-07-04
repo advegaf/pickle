@@ -58,7 +58,7 @@ struct FloatingTabBar: View {
             }
         } label: {
             PickleIcon(item.icon, size: 23)
-                .foregroundStyle(active ? Palette.accent : Palette.secondary)
+                .foregroundStyle(active ? Palette.primary : Palette.secondary)
                 .frame(width: 44, height: 52)
                 .contentShape(Rectangle())
         }

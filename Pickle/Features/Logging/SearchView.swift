@@ -69,7 +69,7 @@ struct SearchView: View {
             TextField("Search foods", text: $vm.query)
                 .font(PickleFont.body(17))
                 .foregroundStyle(Palette.primary)
-                .tint(Palette.accent)
+                .tint(Palette.primary)
                 .focused($focused)
                 .autocorrectionDisabled()
                 .submitLabel(.search)
@@ -193,7 +193,7 @@ struct FoodRow: View {
                 }
                 Spacer()
                 PickleIcon(.add, size: 15)
-                    .foregroundStyle(Palette.accent)
+                    .foregroundStyle(Palette.secondary)
                     .frame(width: 32, height: 32)
             }
             .frame(minHeight: 56)

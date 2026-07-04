@@ -53,7 +53,7 @@ struct WeekStrip: View {
                     .foregroundStyle(isSelected ? Palette.onAccent : Palette.primary)
                     .monospacedDigit()
                 Circle()
-                    .fill(logged && !isSelected ? Palette.accent : .clear)
+                    .fill(logged && !isSelected ? Palette.tertiary : .clear)
                     .frame(width: 4, height: 4)
             }
             .frame(maxWidth: .infinity, minHeight: 62)

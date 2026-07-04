@@ -27,7 +27,7 @@ struct UnderlineField: View {
                 TextField("", text: $text)
                     .font(PickleFont.body(17))
                     .foregroundStyle(Palette.primary)
-                    .tint(Palette.accent)
+                    .tint(Palette.primary)
                     .keyboardType(keyboard)
                     .textContentType(contentType)
                     .focused($focused)
@@ -38,7 +38,7 @@ struct UnderlineField: View {
             .padding(.top, 12)
 
             Rectangle()
-                .fill(focused ? Palette.accent : Palette.hairline)
+                .fill(focused ? Palette.primary : Palette.hairline)
                 .frame(height: 1)
                 .animation(Motion.easeOut, value: focused)
         }

@@ -112,7 +112,7 @@ struct ProgressLine: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule().fill(Palette.hairline)
-                Capsule().fill(Palette.accent)
+                Capsule().fill(Palette.primary)
                     .frame(width: max(geo.size.width * min(max(progress, 0), 1), 2))
                     .animation(Motion.easeOut, value: progress)
             }

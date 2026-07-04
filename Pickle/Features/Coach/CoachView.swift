@@ -303,7 +303,7 @@ struct QuoteCarousel: View {
             HStack(spacing: 6) {
                 ForEach(shown.indices, id: \.self) { i in
                     Circle()
-                        .fill(i == index ? Palette.accent : Palette.faint.opacity(0.5))
+                        .fill(i == index ? Palette.primary : Palette.faint.opacity(0.5))
                         .frame(width: 6, height: 6)
                 }
             }

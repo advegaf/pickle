@@ -8,7 +8,7 @@ struct MacroBar: View {
     let short: String          // "P"
     let value: Int             // grams consumed
     let target: Int            // grams target
-    var tint: Color = Palette.accent
+    var tint: Color = Palette.primary
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 

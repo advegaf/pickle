@@ -95,7 +95,9 @@ struct ArcGauge: View {
     }
 
     private var knob: some View {
-        let radius = (diameter - lineWidth) / 2
+        // Circle().stroke centers its stroke ON the shape path, whose radius is
+        // diameter/2 (the Circle inscribes the frame) - so the knob rides exactly there.
+        let radius = diameter / 2
         return Circle()
             .fill(tint)
             .frame(width: lineWidth + 8, height: lineWidth + 8)

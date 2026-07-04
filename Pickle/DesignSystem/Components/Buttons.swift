@@ -78,7 +78,7 @@ struct TextLink: View {
         Button(action: action) {
             Text(title)
                 .font(PickleFont.button(14))
-                .foregroundStyle(Palette.accent)
+                .foregroundStyle(Palette.primary)
                 .underline()
                 .frame(minHeight: 44) // hit area
         }

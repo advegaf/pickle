@@ -98,7 +98,7 @@ struct RemindersSheet: View {
             } label: {
                 Text("Open Settings")
                     .font(PickleFont.button(14))
-                    .foregroundStyle(Palette.accent)
+                    .foregroundStyle(Palette.primary)
                     .frame(minHeight: 44, alignment: .leading)
             }
             .buttonStyle(.pressable)

@@ -76,7 +76,7 @@ struct DotLoader: View {
             if reduceMotion {
                 HStack(spacing: 8) {
                     ForEach(0..<4, id: \.self) { i in
-                        Circle().fill(Palette.accent)
+                        Circle().fill(Palette.primary)
                             .frame(width: dot, height: dot)
                             .opacity(done && i != 0 ? 0 : 1)
                     }
@@ -89,7 +89,7 @@ struct DotLoader: View {
                 ZStack {
                     ForEach(0..<4, id: \.self) { i in
                         Circle()
-                            .fill(Palette.accent)
+                            .fill(Palette.primary)
                             .frame(width: dot, height: dot)
                             .scaleEffect(done && i == 0 ? 1.3 : 1)
                             .opacity(done && i != 0 ? 0 : 1)
