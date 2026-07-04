@@ -27,6 +27,11 @@ struct RootView: View {
             }
         }
         .scrollIndicators(.hidden)
+        // Rubber-band only where content genuinely overflows: fit-height screens and
+        // every screen horizontally stop being grabbable (device verdict: the UIKit
+        // appearance guards alone did not hold). Environment-inherited by all
+        // descendant scroll views, including presented sheets.
+        .scrollBounceBehavior(.basedOnSize, axes: [.horizontal, .vertical])
         .task {
             applyLaunchOptions()
             store.refreshWidgetSnapshot()   // ensure the App-Group snapshot exists for the widget gallery

@@ -3,17 +3,26 @@ import UIKit
 
 // MARK: - Glass card
 
-/// The card surface, applied ~15x across the app: REAL Liquid Glass (user's call at the
-/// review gate), tinted with the neutral surface tone so cards keep a whisper of body
-/// over the pure-black canvas, plus ONE ambient shadow. Rollback point: swap glassEffect
-/// back to a flat `Palette.surface` fill if scroll stutters on device.
+/// The card surface, applied ~15x across the app. Solid glass-LOOK, not real glass:
+/// on-device Liquid Glass cards read too translucent over pure black (only the rim
+/// light separated them), so cards match the week-strip pills exactly - flat surface
+/// fill + top-edge highlight - plus ONE ambient shadow for lift. The floating bar and
+/// sheets keep real glass; content cards do not.
 struct GlassCard: ViewModifier {
     var radius: CGFloat = Radius.card
 
     func body(content: Content) -> some View {
         content
-            .glassEffect(.regular.tint(Palette.surface.opacity(0.55)),
-                         in: RoundedRectangle(cornerRadius: radius))
+            .background(Palette.surface)
+            .clipShape(RoundedRectangle(cornerRadius: radius))
+            .overlay(
+                RoundedRectangle(cornerRadius: radius)
+                    .strokeBorder(
+                        LinearGradient(colors: [.white.opacity(0.10), .white.opacity(0.02)],
+                                       startPoint: .top, endPoint: .bottom),
+                        lineWidth: 1
+                    )
+            )
             .shadow(color: .black.opacity(0.35), radius: 24, y: 8)
     }
 }

@@ -25,6 +25,9 @@ enum LaunchOptions {
         return Int(args[i + 1])
     }
 
+    /// `--tips` forces every first-run tip to show (for the screenshot loop).
+    static var showTips: Bool { args.contains("--tips") }
+
     private static var args: [String] { ProcessInfo.processInfo.arguments }
 }
 

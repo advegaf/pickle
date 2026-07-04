@@ -53,6 +53,22 @@ enum DayKey {
         return shifted(key, by: -daysSinceStart)
     }
 
+    /// Ordered week-start labels from one week to another (inclusive bounds; both are
+    /// normalized to their own week starts). Empty if the range is malformed/inverted.
+    static func weekStarts(from: String, to: String,
+                           firstWeekday: Int = Calendar.current.firstWeekday) -> [String] {
+        guard var cursor = weekStart(of: from, firstWeekday: firstWeekday),
+              let end = weekStart(of: to, firstWeekday: firstWeekday),
+              cursor <= end else { return [] }
+        var out: [String] = []
+        while cursor <= end {
+            out.append(cursor)
+            guard let next = shifted(cursor, by: 7) else { break }
+            cursor = next
+        }
+        return out
+    }
+
     /// A concrete moment inside a local day label: noon local time, immune to DST edges
     /// (used to backfill logs onto a viewed past day).
     static func date(from key: String, in timeZone: TimeZone = .current) -> Date? {

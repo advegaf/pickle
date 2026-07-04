@@ -1,4 +1,5 @@
 import SwiftUI
+import TipKit
 
 /// The five-tab shell. One floating Liquid Glass bar carries the raised Log button and
 /// all five tabs; it is supplied via `safeAreaInset` so every tab's content clears it
@@ -10,6 +11,14 @@ struct MainTabView: View {
     /// Tabs are created on first visit and then kept alive (hidden via opacity), so a tab
     /// never rebuilds on return, the gauge never re-animates, and switching cross-fades.
     @State private var visited: Set<Int> = [0]
+    /// First-run tips, shown one at a time in this order across Home + the bar.
+    @State private var tips = TipGroup(.ordered) {
+        LogButtonTip()
+        GaugeTip()
+        WeekStripTip()
+        PredictedTip()
+        BellTip()
+    }
 
     var body: some View {
         ZStack {
@@ -17,7 +26,8 @@ struct MainTabView: View {
 
             ZStack {
                 keptTab(0) { HomeView(onLog: { logRequest = LogRequest(meal: .current) },
-                                      onLogMeal: { logRequest = LogRequest(meal: $0, day: $1) }) }
+                                      onLogMeal: { logRequest = LogRequest(meal: $0, day: $1) },
+                                      tips: tips) }
                 keptTab(1) { ExploreView() }
                 keptTab(2) { CoachView() }
                 keptTab(3) { ActivityView() }
@@ -27,7 +37,8 @@ struct MainTabView: View {
             .animation(Motion.easeOut, value: selection)
         }
         .safeAreaInset(edge: .bottom) {
-            FloatingTabBar(items: PickleTabItem.pickleTabs, selection: $selection) {
+            FloatingTabBar(items: PickleTabItem.pickleTabs, selection: $selection,
+                           logTip: tips.currentTip as? LogButtonTip) {
                 logRequest = LogRequest(meal: .current)
             }
             .padding(.horizontal, Spacing.screen + 4)

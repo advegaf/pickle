@@ -49,6 +49,28 @@ final class WeekMathTests: XCTestCase {
         XCTAssertEqual(ords.last! - ords.first!, 6)
     }
 
+    // MARK: Week paging (Home strip history)
+
+    func testWeekStartsInclusiveBounds() {
+        // Mon-weeks from mid-June to early July 2026.
+        let weeks = DayKey.weekStarts(from: "2026-06-17", to: "2026-07-03", firstWeekday: 2)
+        XCTAssertEqual(weeks, ["2026-06-15", "2026-06-22", "2026-06-29"])
+    }
+
+    func testWeekStartsSingleWeekWhenSameWeek() {
+        XCTAssertEqual(DayKey.weekStarts(from: "2026-07-01", to: "2026-07-03", firstWeekday: 2),
+                       ["2026-06-29"])
+    }
+
+    func testWeekStartsAcrossYearBoundary() {
+        let weeks = DayKey.weekStarts(from: "2025-12-28", to: "2026-01-06", firstWeekday: 2)
+        XCTAssertEqual(weeks, ["2025-12-22", "2025-12-29", "2026-01-05"])
+    }
+
+    func testWeekStartsInvertedRangeIsEmpty() {
+        XCTAssertTrue(DayKey.weekStarts(from: "2026-07-03", to: "2026-06-01", firstWeekday: 2).isEmpty)
+    }
+
     // MARK: Backfill date
 
     func testDateFromKeyRoundTrips() {

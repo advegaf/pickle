@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// The Home week scrubber: the current week's seven day pills. Tapping a day drives
-/// the whole screen's data (gauge, macros, meals) for that day. Deep history stays in
-/// Activity; this is a 7-day quick scrubber, not a calendar.
+/// The Home week scrubber: seven day pills per week, swipeable back through history
+/// to the week of the earliest logged day (deep browsing stays in Activity). Tapping
+/// a day drives the whole screen's data; a Today chip appears whenever you are not
+/// looking at the current week (or day) and snaps everything home.
 struct WeekStrip: View {
     /// Today's `yyyy-MM-dd` label.
     let today: String
@@ -12,24 +13,87 @@ struct WeekStrip: View {
     let dayKcal: [String: Int]
     let onSelect: (String) -> Void
 
+    /// Week-start key of the visible page.
+    @State private var visibleWeek = ""
+
     @Environment(\.dynamicTypeSize) private var typeSize
 
-    private var week: [String] {
-        guard let start = DayKey.weekStart(of: today) else { return [] }
-        return (0..<7).compactMap { DayKey.shifted(start, by: $0) }
+    private var currentWeekStart: String { DayKey.weekStart(of: today) ?? today }
+
+    private var earliestWeekStart: String {
+        guard let firstLogged = dayKcal.keys.min(),
+              let start = DayKey.weekStart(of: firstLogged) else { return currentWeekStart }
+        return min(start, currentWeekStart)
+    }
+
+    private var weeks: [String] { DayKey.weekStarts(from: earliestWeekStart, to: currentWeekStart) }
+
+    private var showTodayChip: Bool {
+        visibleWeek != currentWeekStart || selected != today
     }
 
     var body: some View {
-        let cells = HStack(spacing: Spacing.s) {
-            ForEach(week, id: \.self) { day in
-                cell(day)
+        VStack(alignment: .trailing, spacing: Spacing.xs) {
+            if showTodayChip {
+                Button {
+                    onSelect(today)
+                    withAnimation(Motion.easeOut) { visibleWeek = currentWeekStart }
+                    Haptics.select()
+                } label: {
+                    Text("Today")
+                        .font(PickleFont.caption(12))
+                        .foregroundStyle(Palette.primary)
+                        .padding(.horizontal, Spacing.m)
+                        .frame(height: 28)
+                        .background(Palette.surface)
+                        .clipShape(Capsule())
+                        .overlay(Capsule().strokeBorder(Palette.glassEdge, lineWidth: 1))
+                }
+                .buttonStyle(.pressable)
+                .frame(minWidth: 44, minHeight: 32)
+                .accessibilityLabel("Jump back to today")
+                .transition(.opacity)
+            }
+
+            if typeSize.isAccessibilitySize {
+                // At accessibility sizes the pager trades poorly against pill width;
+                // fall back to a scrollable current week.
+                ScrollView(.horizontal, showsIndicators: false) {
+                    weekRow(currentWeekStart)
+                }
+            } else {
+                TabView(selection: $visibleWeek) {
+                    ForEach(weeks, id: \.self) { weekStart in
+                        weekRow(weekStart).tag(weekStart)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(height: 70)
             }
         }
-        Group {
-            if typeSize.isAccessibilitySize {
-                ScrollView(.horizontal, showsIndicators: false) { cells }
-            } else {
-                cells
+        .animation(Motion.easeOut, value: showTodayChip)
+        .onAppear { syncVisibleWeek() }
+        .onChange(of: today) { _, _ in syncVisibleWeek(force: true) }
+        .onChange(of: selected) { _, new in
+            // External selection changes (day rollover reset) pull the pager along.
+            if let week = DayKey.weekStart(of: new), week != visibleWeek {
+                visibleWeek = week
+            }
+        }
+    }
+
+    private func syncVisibleWeek(force: Bool = false) {
+        if force || visibleWeek.isEmpty || !weeks.contains(visibleWeek) {
+            visibleWeek = currentWeekStart
+        }
+    }
+
+    private func weekRow(_ weekStart: String) -> some View {
+        HStack(spacing: Spacing.s) {
+            ForEach(0..<7, id: \.self) { offset in
+                if let day = DayKey.shifted(weekStart, by: offset) {
+                    cell(day)
+                }
             }
         }
     }
@@ -104,9 +168,9 @@ struct WeekStrip: View {
     ZStack {
         Palette.background.ignoresSafeArea()
         WeekStrip(
-            today: "2026-07-03",
-            selected: "2026-07-03",
-            dayKcal: ["2026-06-29": 1800, "2026-07-01": 2100, "2026-07-02": 1650],
+            today: "2026-07-04",
+            selected: "2026-07-04",
+            dayKcal: ["2026-06-20": 1500, "2026-06-29": 1800, "2026-07-01": 2100, "2026-07-02": 1650],
             onSelect: { _ in }
         )
         .padding(Spacing.screen)

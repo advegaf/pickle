@@ -1,4 +1,5 @@
 import SwiftUI
+import TipKit
 
 /// The Glow Home: greeting header, a week scrubber that drives the whole screen's
 /// data, the calorie arc hero, macro cards, then meals and quick links.
@@ -13,6 +14,8 @@ struct HomeView: View {
     var onLog: () -> Void = {}
     /// Log into a meal slot; `day` nil means today, otherwise an explicit backfill day.
     var onLogMeal: (MealSlot, String?) -> Void = { _, _ in }
+    /// First-run tip sequence, owned by MainTabView (the Log-button tip anchors there).
+    var tips: TipGroup? = nil
     @State private var mealDetail: MealSlot?
     @State private var quickSheet: QuickSheet?
     @State private var showProfile = false
@@ -56,6 +59,7 @@ struct HomeView: View {
                               selected: shownDay,
                               dayKcal: dayKcal,
                               onSelect: { selectedDay = $0 })
+                        .popoverTip(tips?.currentTip as? WeekStripTip)
                         .pickleEntrance(index: 1)
 
                     ArcGauge(consumed: day.totals.kcal,
@@ -64,6 +68,7 @@ struct HomeView: View {
                              isEmptyDay: viewingToday && day.isEmpty)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Spacing.s)
+                        .popoverTip(tips?.currentTip as? GaugeTip)
                         .pickleEntrance(index: 2)
 
                     MacroCardRow(consumed: day.totals, targets: profile.targets)
@@ -82,6 +87,7 @@ struct HomeView: View {
                                 onLogMeal(prediction.slot, nil)
                             }
                         }
+                        .popoverTip(tips?.currentTip as? PredictedTip)
                         .pickleEntrance(index: 4)
                     }
 
@@ -113,7 +119,11 @@ struct HomeView: View {
             .environmentObject(store)
             .presentationBackground(Palette.background)
         }
-        .onAppear { syncDay() }
+        .onAppear {
+            syncDay()
+            // Home only exists post-onboarding; opens the gate for the first-run tips.
+            PickleTipsGate.onboarded = true
+        }
         .onChange(of: store.revision) { _, _ in refreshDayKcal() }
         .onChange(of: store.diaryDay(today).totals.kcal) { old, new in
             // Goal-hit moment: one celebration per crossing, today only.
@@ -172,6 +182,7 @@ struct HomeView: View {
             BellChip(missed: reminders.missedCount(today: store.diaryDay(today), todayKey: today)) {
                 showReminders = true
             }
+            .popoverTip(tips?.currentTip as? BellTip)
 
             Button(action: onLog) {
                 PickleIcon(.search, size: 17)
