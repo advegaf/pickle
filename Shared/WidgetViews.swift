@@ -21,30 +21,33 @@ enum W {
 
 // MARK: - Building blocks
 
-/// A trimmed progress ring. `tint` lets the Macros widget reuse it for a protein ring; the
-/// calorie widget passes white (or the over-red) so the over-state reads on the home screen.
+/// The mini arc gauge: the app's 270-degree hero arc at widget scale, flat teal (no
+/// glow, WidgetKit rendering cost). `tint` lets the Macros widget ring protein.
 struct RingMini: View {
     let fraction: Double
     let lineWidth: CGFloat
-    var tint: Color = W.primary
+    var tint: Color = W.accent
 
     var body: some View {
         ZStack {
-            Circle().stroke(W.faint.opacity(0.4), lineWidth: lineWidth)
             Circle()
-                .trim(from: 0, to: min(max(fraction, 0), 1))
+                .trim(from: 0, to: 0.75)
+                .stroke(W.faint.opacity(0.5), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .rotationEffect(.degrees(135))
+            Circle()
+                .trim(from: 0, to: 0.75 * min(max(fraction, 0), 1))
                 .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                .rotationEffect(.degrees(-90))
+                .rotationEffect(.degrees(135))
         }
     }
 }
 
-/// Kcal-remaining ring. Thin wrapper over `RingMini` that picks white vs the over-red.
+/// Calorie arc. Thin wrapper over `RingMini` that picks the accent vs the over-coral.
 struct KcalRingMini: View {
     let fraction: Double
     let lineWidth: CGFloat
     var over: Bool = false
-    var body: some View { RingMini(fraction: fraction, lineWidth: lineWidth, tint: over ? W.over : W.primary) }
+    var body: some View { RingMini(fraction: fraction, lineWidth: lineWidth, tint: over ? W.over : W.accent) }
 }
 
 /// Discrete meals-logged dots (filled = logged, hollow = remaining). No "·" separators.
@@ -96,21 +99,24 @@ struct CalorieHome: View {
             ZStack {
                 KcalRingMini(fraction: snap.fraction, lineWidth: 8, over: snap.isOver)
                 VStack(spacing: 0) {
-                    Text("\(snap.isOver ? snap.overKcal : snap.remainingKcal)")
-                        .font(.system(size: 22, weight: .bold)).foregroundStyle(snap.isOver ? W.over : W.primary).monospacedDigit()
-                    Text(snap.isOver ? "OVER" : "LEFT").font(.system(size: 8, weight: .medium)).tracking(1).foregroundStyle(snap.isOver ? W.over : W.tertiary)
+                    Text("\(snap.consumedKcal)")
+                        .font(.system(size: 21, weight: .semibold)).foregroundStyle(W.primary).monospacedDigit()
+                        .minimumScaleFactor(0.7).lineLimit(1)
+                    Text("of \(snap.targetKcal)")
+                        .font(.system(size: 8, weight: .medium)).foregroundStyle(W.tertiary).monospacedDigit()
                 }
+                .padding(.horizontal, 12)
             }
             .frame(width: 92, height: 92)
 
             if !small {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("DAILY FUEL").font(.system(size: 9, weight: .medium)).tracking(1.5).foregroundStyle(W.tertiary)
+                    Text("Today").font(.system(size: 10, weight: .medium)).foregroundStyle(W.tertiary)
                     MacroBarMini(short: "P", value: snap.proteinG, target: snap.proteinTarget, tint: W.protein)
                     MacroBarMini(short: "C", value: snap.carbsG, target: snap.carbsTarget, tint: W.carbs)
                     MacroBarMini(short: "F", value: snap.fatG, target: snap.fatTarget, tint: W.fat)
-                    Text("\(snap.consumedKcal) / \(snap.targetKcal) cal")
-                        .font(.system(size: 11)).foregroundStyle(W.secondary).monospacedDigit()
+                    Text(snap.isOver ? "\(snap.overKcal) over goal" : "\(snap.remainingKcal) left")
+                        .font(.system(size: 11)).foregroundStyle(snap.isOver ? W.over : W.secondary).monospacedDigit()
                 }
             }
         }
@@ -123,15 +129,18 @@ struct CalorieLarge: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("DAILY FUEL").font(.system(size: 10, weight: .medium)).tracking(2).foregroundStyle(W.tertiary)
+            Text("Today").font(.system(size: 11, weight: .medium)).foregroundStyle(W.tertiary)
             HStack(spacing: 18) {
                 ZStack {
                     KcalRingMini(fraction: snap.fraction, lineWidth: 10, over: snap.isOver)
                     VStack(spacing: 0) {
-                        Text("\(snap.isOver ? snap.overKcal : snap.remainingKcal)")
-                            .font(.system(size: 30, weight: .bold)).foregroundStyle(snap.isOver ? W.over : W.primary).monospacedDigit()
-                        Text(snap.isOver ? "OVER" : "LEFT").font(.system(size: 9, weight: .medium)).tracking(1).foregroundStyle(snap.isOver ? W.over : W.tertiary)
+                        Text("\(snap.consumedKcal)")
+                            .font(.system(size: 28, weight: .semibold)).foregroundStyle(W.primary).monospacedDigit()
+                            .minimumScaleFactor(0.7).lineLimit(1)
+                        Text("of \(snap.targetKcal)")
+                            .font(.system(size: 10, weight: .medium)).foregroundStyle(W.tertiary).monospacedDigit()
                     }
+                    .padding(.horizontal, 14)
                 }
                 .frame(width: 120, height: 120)
 
@@ -145,8 +154,8 @@ struct CalorieLarge: View {
             HStack {
                 MealDotsMini(logged: snap.mealsLogged, total: snap.mealsTotal)
                 Spacer()
-                Text("\(snap.consumedKcal) / \(snap.targetKcal) cal")
-                    .font(.system(size: 12)).foregroundStyle(W.secondary).monospacedDigit()
+                Text(snap.isOver ? "\(snap.overKcal) over goal" : "\(snap.remainingKcal) left")
+                    .font(.system(size: 12)).foregroundStyle(snap.isOver ? W.over : W.secondary).monospacedDigit()
             }
         }
         .padding(16)
@@ -159,13 +168,16 @@ struct CalorieCircular: View {
     let snap: DiarySnapshot
     var body: some View {
         ZStack {
-            RingMini(fraction: snap.fraction, lineWidth: 5)
+            RingMini(fraction: snap.fraction, lineWidth: 5, tint: .white)
             VStack(spacing: 0) {
-                Text("\(snap.isOver ? snap.overKcal : snap.remainingKcal)")
-                    .font(.system(size: 17, weight: .bold)).monospacedDigit()
-                Text(snap.isOver ? "over" : "left").font(.system(size: 8, weight: .medium))
-                    .foregroundStyle(.secondary)
+                Text("\(snap.consumedKcal)")
+                    .font(.system(size: 16, weight: .bold)).monospacedDigit()
+                    .minimumScaleFactor(0.7).lineLimit(1)
+                Text(snap.isOver ? "over" : "of \(snap.targetKcal)")
+                    .font(.system(size: 8, weight: .medium))
+                    .foregroundStyle(.secondary).monospacedDigit()
             }
+            .padding(.horizontal, 8)
             .widgetAccentable()
         }
     }
@@ -175,12 +187,13 @@ struct CalorieRectangular: View {
     let snap: DiarySnapshot
     var body: some View {
         HStack(spacing: 10) {
-            RingMini(fraction: snap.fraction, lineWidth: 4).frame(width: 34, height: 34).widgetAccentable()
+            RingMini(fraction: snap.fraction, lineWidth: 4, tint: .white).frame(width: 34, height: 34).widgetAccentable()
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text("\(snap.isOver ? snap.overKcal : snap.remainingKcal)")
+                    Text("\(snap.consumedKcal)")
                         .font(.system(size: 20, weight: .bold)).monospacedDigit().widgetAccentable()
-                    Text(snap.isOver ? "cal over" : "cal left").font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
+                    Text(snap.isOver ? "cal, \(snap.overKcal) over" : "of \(snap.targetKcal) cal")
+                        .font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary).monospacedDigit()
                 }
                 ViewThatFits {
                     Text("P \(snap.proteinG)   C \(snap.carbsG)   F \(snap.fatG)")
@@ -197,7 +210,8 @@ struct CalorieRectangular: View {
 struct CalorieInline: View {
     let snap: DiarySnapshot
     var body: some View {
-        Label(snap.isOver ? "\(snap.overKcal) cal over" : "\(snap.remainingKcal) cal left",
+        Label(snap.isOver ? "\(snap.consumedKcal) cal, \(snap.overKcal) over"
+                          : "\(snap.consumedKcal) of \(snap.targetKcal) cal",
               systemImage: "flame.fill")
     }
 }
@@ -210,7 +224,7 @@ struct MacrosHome: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: small ? 10 : 12) {
-            Text("MACROS").font(.system(size: 9, weight: .medium)).tracking(2).foregroundStyle(W.tertiary)
+            Text("Macros").font(.system(size: 10, weight: .medium)).foregroundStyle(W.tertiary)
             row("P", snap.proteinG, snap.proteinTarget, W.protein)
             row("C", snap.carbsG, snap.carbsTarget, W.carbs)
             row("F", snap.fatG, snap.fatTarget, W.fat)
