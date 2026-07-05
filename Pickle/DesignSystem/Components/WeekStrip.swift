@@ -2,8 +2,8 @@ import SwiftUI
 
 /// The Home week scrubber: seven day pills per week, swipeable back through history
 /// to the week of the earliest logged day (deep browsing stays in Activity). Tapping
-/// a day drives the whole screen's data; a Today chip appears whenever you are not
-/// looking at the current week (or day) and snaps everything home.
+/// a day drives the whole screen's data; today's pill carries the outline ring, and
+/// day rollover snaps the pager home overnight.
 struct WeekStrip: View {
     /// Today's `yyyy-MM-dd` label.
     let today: String
@@ -28,33 +28,8 @@ struct WeekStrip: View {
 
     private var weeks: [String] { DayKey.weekStarts(from: earliestWeekStart, to: currentWeekStart) }
 
-    private var showTodayChip: Bool {
-        visibleWeek != currentWeekStart || selected != today
-    }
-
     var body: some View {
-        VStack(alignment: .trailing, spacing: Spacing.xs) {
-            if showTodayChip {
-                Button {
-                    onSelect(today)
-                    withAnimation(Motion.easeOut) { visibleWeek = currentWeekStart }
-                    Haptics.select()
-                } label: {
-                    Text("Today")
-                        .font(PickleFont.caption(12))
-                        .foregroundStyle(Palette.primary)
-                        .padding(.horizontal, Spacing.m)
-                        .frame(height: 28)
-                        .background(Palette.surface)
-                        .clipShape(Capsule())
-                        .overlay(Capsule().strokeBorder(Palette.glassEdge, lineWidth: 1))
-                }
-                .buttonStyle(.pressable)
-                .frame(minWidth: 44, minHeight: 32)
-                .accessibilityLabel("Jump back to today")
-                .transition(.opacity)
-            }
-
+        Group {
             if typeSize.isAccessibilitySize {
                 // At accessibility sizes the pager trades poorly against pill width;
                 // fall back to a scrollable current week.
@@ -71,7 +46,6 @@ struct WeekStrip: View {
                 .frame(height: 70)
             }
         }
-        .animation(Motion.easeOut, value: showTodayChip)
         .onAppear { syncVisibleWeek() }
         .onChange(of: today) { _, _ in syncVisibleWeek(force: true) }
         .onChange(of: selected) { _, new in
