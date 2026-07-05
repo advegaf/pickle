@@ -20,21 +20,23 @@ struct CoachView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.xxl) {
-                hero
-                VStack(alignment: .leading, spacing: Spacing.xxl) {
-                    coachCard
-                    adaptiveCard
-                    yourPlan
-                    insights
-                    recalcButton
-                    QuoteCarousel()
-                }
-                .padding(.horizontal, Spacing.screen)
+                Text("Coach")
+                    .font(PickleFont.display(34))
+                    .foregroundStyle(Palette.primary)
+                    .padding(.top, Spacing.s)
+
+                coachCard.pickleEntrance(index: 1)
+                heroCard.pickleEntrance(index: 2)
+                adaptiveCard.pickleEntrance(index: 3)
+                yourPlan.pickleEntrance(index: 4)
+                insights.pickleEntrance(index: 5)
+                recalcButton.pickleEntrance(index: 6)
+                QuoteCarousel().pickleEntrance(index: 7)
             }
+            .padding(.horizontal, Spacing.screen)
             .padding(.bottom, Spacing.l)
         }
         .background(Palette.background)
-        .ignoresSafeArea(edges: .top)
         .task { await loadCoach() }
         .sheet(isPresented: $showRecalc) {
             RecalculateSheet().environmentObject(store)
@@ -110,22 +112,21 @@ struct CoachView: View {
         coachLoading = false
     }
 
-    private var hero: some View {
+    /// The old full-bleed hero, reborn as a rounded photo card (the Explore imagery
+    /// pattern) so Coach keeps its editorial soul under the standard tab header.
+    private var heroCard: some View {
         ZStack(alignment: .bottomLeading) {
             TreatedImage(asset: "coach-hero", seed: 9)
-            LinearGradient(colors: [.clear, .black.opacity(0.9)], startPoint: .center, endPoint: .bottom)
-            VStack(alignment: .leading, spacing: Spacing.s) {
-                SectionLabel(text: "Coach", color: Palette.secondary)
-                Text("Powering precision\nnutrition.")
-                    .font(PickleFont.display(30))
-                    .foregroundStyle(Palette.primary)
-            }
-            .padding(Spacing.screen)
-            .padding(.bottom, Spacing.s)
+            LinearGradient(colors: [.clear, .black.opacity(0.85)], startPoint: .center, endPoint: .bottom)
+            Text("Powering precision\nnutrition.")
+                .font(PickleFont.display(24))
+                .foregroundStyle(Palette.primary)
+                .padding(Spacing.l)
         }
-        .frame(height: 320)
+        .frame(height: 200)
         .frame(maxWidth: .infinity)
-        .clipped()
+        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+        .imageOutline()
     }
 
     // MARK: Adaptive
