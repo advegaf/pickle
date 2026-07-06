@@ -68,9 +68,20 @@ struct MacroRowCompact: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text(label)
-                .font(PickleFont.label())
-                .foregroundStyle(Palette.secondary)
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(label)
+                    .font(PickleFont.label())
+                    .foregroundStyle(Palette.secondary)
+                Spacer(minLength: Spacing.s)
+                Text("\(grams)g")
+                    .font(PickleFont.bodyMedium(15))
+                    .foregroundStyle(Palette.primary)
+                    .monospacedDigit()
+                Text("of \(target)g")
+                    .font(PickleFont.caption(11))
+                    .foregroundStyle(Palette.tertiary)
+                    .monospacedDigit()
+            }
 
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
@@ -81,17 +92,6 @@ struct MacroRowCompact: View {
                 }
             }
             .frame(height: 4)
-
-            HStack(alignment: .firstTextBaseline, spacing: 3) {
-                Text("\(grams)g")
-                    .font(PickleFont.bodyMedium(15))
-                    .foregroundStyle(Palette.primary)
-                    .monospacedDigit()
-                Text("of \(target)g")
-                    .font(PickleFont.caption(11))
-                    .foregroundStyle(Palette.tertiary)
-                    .monospacedDigit()
-            }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(label)

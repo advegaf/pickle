@@ -97,46 +97,94 @@ extension View {
     }
 }
 
-// MARK: - Bubble
+// MARK: - Bubble (TipKit popover anatomy: dark rounded rect + pointer arrow + X chip)
 
-/// The coach bubble: title, message, and the ONLY dismissal - its X.
+/// The popover's pointer triangle. `up` points toward an anchor ABOVE the bubble.
+private struct PopoverArrow: Shape {
+    let up: Bool
+
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        if up {
+            p.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+            p.addLine(to: CGPoint(x: rect.midX, y: rect.minY))
+            p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        } else {
+            p.move(to: CGPoint(x: rect.minX, y: rect.minY))
+            p.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+            p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        }
+        p.closeSubpath()
+        return p
+    }
+}
+
+/// The coach bubble, styled after the system tip popover the user preferred: flat
+/// dark fill, generous radius, title + secondary message, round X chip. The X is the
+/// ONLY dismissal.
 struct CoachBubble: View {
     let step: TipStep
+    /// True when the bubble sits below its anchor (arrow on top edge).
+    var arrowOnTop: Bool
+    /// Arrow center x, in the bubble's own coordinate space.
+    var arrowX: CGFloat
     let onClose: () -> Void
 
+    private let arrowSize = CGSize(width: 20, height: 10)
+
     var body: some View {
-        HStack(alignment: .top, spacing: Spacing.s) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(step.title)
-                    .font(PickleFont.bodyMedium(15))
-                    .foregroundStyle(Palette.primary)
-                Text(step.message)
-                    .font(PickleFont.caption(13))
-                    .foregroundStyle(Palette.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+        VStack(spacing: 0) {
+            if arrowOnTop {
+                PopoverArrow(up: true)
+                    .fill(Palette.surfaceRaised)
+                    .frame(width: arrowSize.width, height: arrowSize.height)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .offset(x: arrowX - arrowSize.width / 2)
             }
-            Button(action: onClose) {
-                PickleIcon(.close, size: 11)
-                    .foregroundStyle(Palette.tertiary)
-                    .frame(width: 28, height: 28)
-                    .background(Palette.surfaceRaised)
-                    .clipShape(Circle())
+            HStack(alignment: .top, spacing: Spacing.m) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(step.title)
+                        .font(PickleFont.bodyMedium(17))
+                        .foregroundStyle(Palette.primary)
+                    Text(step.message)
+                        .font(PickleFont.body(15))
+                        .foregroundStyle(Palette.secondary)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Button(action: onClose) {
+                    PickleIcon(.close, size: 11)
+                        .foregroundStyle(Palette.tertiary)
+                        .frame(width: 28, height: 28)
+                        .background(Palette.surface)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.pressable)
+                .frame(minWidth: 44, minHeight: 44, alignment: .topTrailing)
+                .accessibilityLabel("Dismiss tip")
             }
-            .buttonStyle(.pressable)
-            .frame(width: 44, height: 44, alignment: .topTrailing)
-            .accessibilityLabel("Dismiss tip")
+            .padding(.leading, Spacing.l)
+            .padding(.trailing, Spacing.s)
+            .padding(.vertical, 14)
+            .background(Palette.surfaceRaised)
+            .clipShape(RoundedRectangle(cornerRadius: 26))
+            if !arrowOnTop {
+                PopoverArrow(up: false)
+                    .fill(Palette.surfaceRaised)
+                    .frame(width: arrowSize.width, height: arrowSize.height)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .offset(x: arrowX - arrowSize.width / 2)
+            }
         }
-        .padding(.leading, Spacing.l)
-        .padding(.vertical, Spacing.m)
-        .padding(.trailing, Spacing.xs)
-        .frame(maxWidth: 320, alignment: .leading)
-        .glassCard(radius: 20, prominent: true)
+        .frame(maxWidth: 340)
+        .shadow(color: .black.opacity(0.30), radius: 16, y: 6)
         .accessibilityElement(children: .contain)
     }
 }
 
-/// Renders the current step's bubble near its anchor. Attach ONCE at the shell level
-/// (MainTabView) so bubbles can float over any tab content and the bar itself.
+/// Renders the current step's bubble adjacent to its anchor, arrow bridging the gap.
+/// Attach ONCE at the shell level (MainTabView) so bubbles can float over any tab
+/// content and the bar itself.
 struct CoachMarkOverlay: ViewModifier {
     @ObservedObject var marks: CoachMarks
 
@@ -145,11 +193,19 @@ struct CoachMarkOverlay: ViewModifier {
             GeometryReader { geo in
                 if let step = marks.current, let anchor = anchors[step] {
                     let rect = geo[anchor]
-                    let above = rect.midY > geo.size.height * 0.55
-                    CoachBubble(step: step) { marks.dismissCurrent() }
-                        .position(x: min(max(rect.midX, 170), geo.size.width - 170),
-                                  y: above ? rect.minY - 64 : rect.maxY + 64)
-                        .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                    let bubbleAbove = rect.midY > geo.size.height * 0.55
+                    let width = min(CGFloat(340), geo.size.width - 2 * Spacing.screen)
+                    let x = min(max(rect.midX, Spacing.screen + width / 2),
+                                geo.size.width - Spacing.screen - width / 2)
+                    // Arrow x within the bubble, clamped clear of the 26pt corners.
+                    let arrowX = min(max(rect.midX - (x - width / 2), 32), width - 32)
+                    CoachBubble(step: step, arrowOnTop: !bubbleAbove, arrowX: arrowX) {
+                        marks.dismissCurrent()
+                    }
+                    .frame(width: width)
+                    .position(x: x,
+                              y: bubbleAbove ? rect.minY - 6 - 52 : rect.maxY + 6 + 52)
+                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
                 }
             }
             .animation(Motion.easeOut, value: marks.current)
