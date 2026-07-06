@@ -24,6 +24,8 @@ enum Palette {
     static let surface = Color(hex: PaletteValues.surface)
     /// Slightly raised surface (pressed / selected).
     static let surfaceRaised = Color(hex: PaletteValues.surfaceRaised)
+    /// Prominent (hero) card surface, one tone lighter than `surface`.
+    static let surfaceElevated = Color(hex: PaletteValues.surfaceElevated)
     /// The one accent: aqua teal. Gauge fill, active tabs, selection, emphasis.
     static let accent = Color(hex: PaletteValues.accent)
     /// Soft glow shadow color derived from the accent.

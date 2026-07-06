@@ -187,7 +187,7 @@ struct HomeView: View {
                 .padding(.trailing, Spacing.xs)
             }
             .padding(Spacing.l)
-            .glassCard()
+            .glassCard(radius: 28, prominent: true)
             .pickleEntrance(index: 2)
         } else {
             VStack(spacing: Spacing.xl) {

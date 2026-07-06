@@ -16,6 +16,8 @@ enum PaletteValues {
     static let surface = "161616"
     /// Pressed / selected surface.
     static let surfaceRaised = "222222"
+    /// Prominent (hero) card surface: one step closer to the light than `surface`.
+    static let surfaceElevated = "1C1C1C"
     /// Pure white primary text. Text intent only; emphasis is `accent`.
     static let primary = "FFFFFF"
     /// Neutral secondary text.

@@ -8,30 +8,36 @@ import UIKit
 /// light separated them), so cards match the week-strip pills exactly - flat surface
 /// fill + top-edge highlight - plus ONE ambient shadow for lift. The floating bar and
 /// sheets keep real glass; content cards do not.
+///
+/// `prominent` is the hero rank: one tone lighter, brighter rim, deeper shadow -
+/// hierarchy through elevation, never through color.
 struct GlassCard: ViewModifier {
     var radius: CGFloat = Radius.card
+    var prominent: Bool = false
 
     func body(content: Content) -> some View {
         content
-            .background(Palette.surface)
+            .background(prominent ? Palette.surfaceElevated : Palette.surface)
             .clipShape(RoundedRectangle(cornerRadius: radius))
             .overlay(
                 RoundedRectangle(cornerRadius: radius)
                     .strokeBorder(
-                        LinearGradient(colors: [.white.opacity(0.10), .white.opacity(0.02)],
+                        LinearGradient(colors: [.white.opacity(prominent ? 0.16 : 0.10),
+                                                .white.opacity(prominent ? 0.04 : 0.02)],
                                        startPoint: .top, endPoint: .bottom),
                         lineWidth: 1
                     )
             )
-            .shadow(color: .black.opacity(0.35), radius: 24, y: 8)
+            .shadow(color: .black.opacity(prominent ? 0.45 : 0.35),
+                    radius: prominent ? 28 : 24, y: prominent ? 10 : 8)
     }
 }
 
 extension View {
     /// The one card surface. Pass a smaller radius for compact cards (concentric rule:
-    /// outer = inner + padding).
-    func glassCard(radius: CGFloat = Radius.card) -> some View {
-        modifier(GlassCard(radius: radius))
+    /// outer = inner + padding); `prominent: true` for the screen's single hero card.
+    func glassCard(radius: CGFloat = Radius.card, prominent: Bool = false) -> some View {
+        modifier(GlassCard(radius: radius, prominent: prominent))
     }
 }
 

@@ -200,7 +200,7 @@ private struct LayoutSchematic: View {
                 .padding(10)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(Palette.hairline, lineWidth: 1)
+                        .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
                 )
             }
         }
