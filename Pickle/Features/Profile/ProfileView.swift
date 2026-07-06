@@ -188,20 +188,14 @@ private struct LayoutSchematic: View {
                     }
                 }
             } else {
-                // Mirrors the carded hero: the arc + lines sit inside a subtle card.
                 HStack(spacing: 12) {
-                    miniArc(size: 40, line: 5)
+                    miniArc(size: 44, line: 5)
                     VStack(alignment: .leading, spacing: 7) {
+                        miniLine(width: 52)
+                        miniLine(width: 40)
                         miniLine(width: 46)
-                        miniLine(width: 36)
-                        miniLine(width: 42)
                     }
                 }
-                .padding(10)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
-                )
             }
         }
     }

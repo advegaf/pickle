@@ -164,18 +164,18 @@ struct HomeView: View {
 
     @ViewBuilder private var hero: some View {
         if layout == .sideBySide {
-            // One glass card contains the whole hero: the card is the separator, and
-            // its internal padding keeps the gauge glow and capsules off every edge.
-            HStack(spacing: Spacing.xl) {
+            // Uncarded (user's A/B pick): the air IS the separator. The gauge's glow
+            // anchors the unit; generous gap and vertical centering compose the rows.
+            HStack(spacing: Spacing.xxl) {
                 ArcGauge(consumed: day.totals.kcal,
                          target: profile.targets.kcal,
-                         diameter: 136,
-                         lineWidth: 13,
+                         diameter: 150,
+                         lineWidth: 14,
                          hasData: profile.targets.kcal > 0,
                          isEmptyDay: viewingToday && day.isEmpty)
                     .coachAnchor(.gauge)
 
-                VStack(spacing: Spacing.m) {
+                VStack(spacing: Spacing.l) {
                     MacroRowCompact(label: "Protein", grams: day.totals.proteinG,
                                     target: profile.targets.proteinG, tint: Palette.protein)
                     MacroRowCompact(label: "Carbs", grams: day.totals.carbsG,
@@ -183,10 +183,8 @@ struct HomeView: View {
                     MacroRowCompact(label: "Fat", grams: day.totals.fatG,
                                     target: profile.targets.fatG, tint: Palette.fat)
                 }
-                .padding(.trailing, Spacing.xs)
             }
-            .padding(Spacing.l)
-            .glassCard(radius: 28, prominent: true)
+            .padding(.vertical, Spacing.s)
             .pickleEntrance(index: 2)
         } else {
             VStack(spacing: Spacing.xl) {
