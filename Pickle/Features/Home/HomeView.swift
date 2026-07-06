@@ -165,11 +165,13 @@ struct HomeView: View {
 
     @ViewBuilder private var hero: some View {
         if layout == .sideBySide {
-            HStack(spacing: Spacing.l) {
+            // One glass card contains the whole hero: the card is the separator, and
+            // its internal padding keeps the gauge glow and capsules off every edge.
+            HStack(spacing: Spacing.xl) {
                 ArcGauge(consumed: day.totals.kcal,
                          target: profile.targets.kcal,
-                         diameter: 150,
-                         lineWidth: 14,
+                         diameter: 136,
+                         lineWidth: 13,
                          hasData: profile.targets.kcal > 0,
                          isEmptyDay: viewingToday && day.isEmpty)
                     .popoverTip(tips?.currentTip as? GaugeTip)
@@ -182,8 +184,10 @@ struct HomeView: View {
                     MacroRowCompact(label: "Fat", grams: day.totals.fatG,
                                     target: profile.targets.fatG, tint: Palette.fat)
                 }
+                .padding(.trailing, Spacing.xs)
             }
-            .padding(.vertical, Spacing.s)
+            .padding(Spacing.l)
+            .glassCard()
             .pickleEntrance(index: 2)
         } else {
             VStack(spacing: Spacing.xl) {
