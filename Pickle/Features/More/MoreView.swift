@@ -260,6 +260,8 @@ struct AboutView: View {
                 ReminderService.shared.resetAll()
                 LogMetric.reset()
                 try? Tips.resetDatastore()
+                UserDefaults(suiteName: AppConfig.appGroup)?
+                    .removeObject(forKey: HomeGaugeLayout.storageKey)
                 Haptics.confirm()
                 dismiss()
             }

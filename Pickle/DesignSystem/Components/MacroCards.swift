@@ -51,6 +51,54 @@ struct MacroCard: View {
     }
 }
 
+/// One macro as a floating row (no card): label, thin capsule, "74g of 257g". Used by
+/// the side-by-side Home hero, where the gauge and macros read as one uncarded unit.
+struct MacroRowCompact: View {
+    let label: String
+    let grams: Int
+    let target: Int
+    let tint: Color
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var fraction: Double {
+        guard target > 0 else { return 0 }
+        return min(Double(grams) / Double(target), 1)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(label)
+                .font(PickleFont.label())
+                .foregroundStyle(Palette.secondary)
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Palette.faint.opacity(0.5))
+                    Capsule().fill(tint)
+                        .frame(width: max(geo.size.width * fraction, fraction > 0 ? 3 : 0))
+                        .animation(reduceMotion ? nil : Motion.ringGrow, value: fraction)
+                }
+            }
+            .frame(height: 4)
+
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text("\(grams)g")
+                    .font(PickleFont.bodyMedium(15))
+                    .foregroundStyle(Palette.primary)
+                    .monospacedDigit()
+                Text("of \(target)g")
+                    .font(PickleFont.caption(11))
+                    .foregroundStyle(Palette.tertiary)
+                    .monospacedDigit()
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(label)
+        .accessibilityValue("\(grams) of \(target) grams")
+    }
+}
+
 /// The 3-up macro row. Collapses to a vertical stack at accessibility type sizes so the
 /// cards never truncate.
 struct MacroCardRow: View {

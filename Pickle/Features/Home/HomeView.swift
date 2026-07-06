@@ -32,7 +32,11 @@ struct HomeView: View {
     @State private var lastKnownToday = ""
     /// Entries across the 28-day window + today (gates the one-time reminder prompt).
     @State private var historyEntryCount = 0
+    /// Hero arrangement, chosen in the profile sheet.
+    @AppStorage(HomeGaugeLayout.storageKey, store: UserDefaults(suiteName: AppConfig.appGroup))
+    private var layoutRaw = HomeGaugeLayout.stacked.rawValue
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private struct PredictedRoute: Identifiable {
         let candidate: FoodCandidate
@@ -62,17 +66,8 @@ struct HomeView: View {
                         .popoverTip(tips?.currentTip as? WeekStripTip)
                         .pickleEntrance(index: 1)
 
-                    ArcGauge(consumed: day.totals.kcal,
-                             target: profile.targets.kcal,
-                             hasData: profile.targets.kcal > 0,
-                             isEmptyDay: viewingToday && day.isEmpty)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.s)
-                        .popoverTip(tips?.currentTip as? GaugeTip)
-                        .pickleEntrance(index: 2)
-
-                    MacroCardRow(consumed: day.totals, targets: profile.targets)
-                        .pickleEntrance(index: 3)
+                    hero
+                        .animation(Motion.easeOut, value: layoutRaw)
 
                     // The predicted card belongs to TODAY only; hidden on past days.
                     // With a prediction it is one tap to log; with no slot history it
@@ -157,6 +152,53 @@ struct HomeView: View {
                                                  today: store.diaryDay(today))
         historyEntryCount = history.reduce(0) { $0 + $1.entries.count }
             + store.diaryDay(today).entries.count
+    }
+
+    // MARK: Hero (gauge + macros, two arrangements)
+
+    /// Side-by-side cannot fit accessibility type; it degrades to stacked there,
+    /// matching the fallback philosophy of MacroCardRow and WeekStrip.
+    private var layout: HomeGaugeLayout {
+        let chosen = HomeGaugeLayout(rawValue: layoutRaw) ?? .stacked
+        return typeSize.isAccessibilitySize ? .stacked : chosen
+    }
+
+    @ViewBuilder private var hero: some View {
+        if layout == .sideBySide {
+            HStack(spacing: Spacing.l) {
+                ArcGauge(consumed: day.totals.kcal,
+                         target: profile.targets.kcal,
+                         diameter: 150,
+                         lineWidth: 14,
+                         hasData: profile.targets.kcal > 0,
+                         isEmptyDay: viewingToday && day.isEmpty)
+                    .popoverTip(tips?.currentTip as? GaugeTip)
+
+                VStack(spacing: Spacing.m) {
+                    MacroRowCompact(label: "Protein", grams: day.totals.proteinG,
+                                    target: profile.targets.proteinG, tint: Palette.protein)
+                    MacroRowCompact(label: "Carbs", grams: day.totals.carbsG,
+                                    target: profile.targets.carbsG, tint: Palette.carbs)
+                    MacroRowCompact(label: "Fat", grams: day.totals.fatG,
+                                    target: profile.targets.fatG, tint: Palette.fat)
+                }
+            }
+            .padding(.vertical, Spacing.s)
+            .pickleEntrance(index: 2)
+        } else {
+            VStack(spacing: Spacing.xl) {
+                ArcGauge(consumed: day.totals.kcal,
+                         target: profile.targets.kcal,
+                         hasData: profile.targets.kcal > 0,
+                         isEmptyDay: viewingToday && day.isEmpty)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.s)
+                    .popoverTip(tips?.currentTip as? GaugeTip)
+
+                MacroCardRow(consumed: day.totals, targets: profile.targets)
+            }
+            .pickleEntrance(index: 2)
+        }
     }
 
     // MARK: Header

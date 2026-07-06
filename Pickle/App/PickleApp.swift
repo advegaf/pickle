@@ -66,6 +66,9 @@ struct PickleApp: App {
                         try? Tips.resetDatastore()
                         Tips.showAllTipsForTesting()
                     }
+                    if LaunchOptions.hideTips {
+                        Tips.hideAllTipsForTesting()
+                    }
                     #endif
                     try? Tips.configure()
                 }

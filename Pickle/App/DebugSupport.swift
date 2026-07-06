@@ -28,6 +28,9 @@ enum LaunchOptions {
     /// `--tips` forces every first-run tip to show (for the screenshot loop).
     static var showTips: Bool { args.contains("--tips") }
 
+    /// `--no-tips` suppresses all tips (UI probes and tip-free captures).
+    static var hideTips: Bool { args.contains("--no-tips") }
+
     private static var args: [String] { ProcessInfo.processInfo.arguments }
 }
 

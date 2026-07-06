@@ -7,6 +7,8 @@ struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showRecalc = false
     @State private var showHealth = false
+    @AppStorage(HomeGaugeLayout.storageKey, store: UserDefaults(suiteName: AppConfig.appGroup))
+    private var layoutRaw = HomeGaugeLayout.stacked.rawValue
 
     private var profile: ProfileData { store.profile() }
 
@@ -17,6 +19,7 @@ struct ProfileView: View {
                     identity
                     statsCard
                     planCard
+                    layoutPicker
                     actions
                 }
                 .padding(.horizontal, Spacing.screen)
@@ -101,6 +104,49 @@ struct ProfileView: View {
         }
     }
 
+    // MARK: Home layout picker
+
+    private var layoutPicker: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            SectionLabel(text: "Home layout")
+            HStack(spacing: Spacing.m) {
+                layoutTile(.stacked)
+                layoutTile(.sideBySide)
+            }
+        }
+    }
+
+    private func layoutTile(_ option: HomeGaugeLayout) -> some View {
+        let selected = layoutRaw == option.rawValue
+        return Button {
+            if !selected {
+                layoutRaw = option.rawValue
+                Haptics.select()
+            }
+        } label: {
+            VStack(spacing: Spacing.s) {
+                LayoutSchematic(layout: option)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 96)
+                    .padding(Spacing.m)
+                    .background(Palette.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.chip + 4))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Radius.chip + 4)
+                            .strokeBorder(selected ? Palette.primary : Palette.glassEdge,
+                                          lineWidth: selected ? 1.5 : 1)
+                    )
+                Text(option.title)
+                    .font(PickleFont.caption(12))
+                    .foregroundStyle(selected ? Palette.primary : Palette.tertiary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.pressable)
+        .accessibilityLabel("\(option.title) layout")
+        .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
+    }
+
     private func row(_ label: String, _ value: String) -> some View {
         HStack {
             Text(label).font(PickleFont.body(15)).foregroundStyle(Palette.secondary)
@@ -125,4 +171,56 @@ struct ProfileView: View {
     }
     private var weightLabel: String { lbLabel(profile.weightKg) }
     private func lbLabel(_ kg: Double) -> String { "\(Int((kg * 2.2046226).rounded())) lb" }
+}
+
+/// A schematic miniature of a Home hero arrangement: a partial arc for the gauge and
+/// rounded bars for the macros. Drawn with shapes so it stays crisp at tile size.
+private struct LayoutSchematic: View {
+    let layout: HomeGaugeLayout
+
+    var body: some View {
+        Group {
+            if layout == .stacked {
+                VStack(spacing: 10) {
+                    miniArc(size: 46, line: 5)
+                    HStack(spacing: 5) {
+                        miniBar(); miniBar(); miniBar()
+                    }
+                }
+            } else {
+                HStack(spacing: 12) {
+                    miniArc(size: 44, line: 5)
+                    VStack(alignment: .leading, spacing: 7) {
+                        miniLine(width: 52)
+                        miniLine(width: 40)
+                        miniLine(width: 46)
+                    }
+                }
+            }
+        }
+    }
+
+    private func miniArc(size: CGFloat, line: CGFloat) -> some View {
+        ZStack {
+            Circle()
+                .trim(from: 0, to: 0.75)
+                .stroke(Palette.faint, style: StrokeStyle(lineWidth: line, lineCap: .round))
+                .rotationEffect(.degrees(135))
+            Circle()
+                .trim(from: 0, to: 0.28)
+                .stroke(Palette.primary, style: StrokeStyle(lineWidth: line, lineCap: .round))
+                .rotationEffect(.degrees(135))
+        }
+        .frame(width: size, height: size)
+    }
+
+    private func miniBar() -> some View {
+        RoundedRectangle(cornerRadius: 4)
+            .fill(Palette.surfaceRaised)
+            .frame(width: 26, height: 18)
+    }
+
+    private func miniLine(width: CGFloat) -> some View {
+        Capsule().fill(Palette.surfaceRaised).frame(width: width, height: 5)
+    }
 }
