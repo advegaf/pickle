@@ -1,5 +1,4 @@
 import SwiftUI
-import TipKit
 
 /// A tab in the floating bar. `icon` is a Hugeicons glyph; glyph-only (the accessibility
 /// label carries the name).
@@ -16,8 +15,6 @@ struct PickleTabItem: Identifiable, Equatable {
 struct FloatingTabBar: View {
     let items: [PickleTabItem]
     @Binding var selection: Int
-    /// First-run tip anchored to the Log button (nil once seen).
-    var logTip: LogButtonTip? = nil
     let onLog: () -> Void
 
     var body: some View {
@@ -48,7 +45,7 @@ struct FloatingTabBar: View {
                 .shadow(color: .black.opacity(0.30), radius: 10, y: 4)
         }
         .buttonStyle(.pressable)
-        .popoverTip(logTip)
+        .coachAnchor(.log)
         .accessibilityLabel("Log food")
         .accessibilityAddTraits(.isButton)
     }

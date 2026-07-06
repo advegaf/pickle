@@ -7,7 +7,7 @@ struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showRecalc = false
     @State private var showHealth = false
-    @AppStorage(HomeGaugeLayout.storageKey, store: UserDefaults(suiteName: AppConfig.appGroup))
+    @AppStorage(HomeGaugeLayout.storageKey, store: HomeGaugeLayout.store)
     private var layoutRaw = HomeGaugeLayout.stacked.rawValue
 
     private var profile: ProfileData { store.profile() }

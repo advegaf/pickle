@@ -1,5 +1,4 @@
 import SwiftUI
-import TipKit
 
 /// The Glow Home: greeting header, a week scrubber that drives the whole screen's
 /// data, the calorie arc hero, macro cards, then meals and quick links.
@@ -14,8 +13,8 @@ struct HomeView: View {
     var onLog: () -> Void = {}
     /// Log into a meal slot; `day` nil means today, otherwise an explicit backfill day.
     var onLogMeal: (MealSlot, String?) -> Void = { _, _ in }
-    /// First-run tip sequence, owned by MainTabView (the Log-button tip anchors there).
-    var tips: TipGroup? = nil
+    /// First-run coach marks, owned by MainTabView (the Log-button mark anchors there).
+    var coachMarks: CoachMarks? = nil
     @State private var mealDetail: MealSlot?
     @State private var quickSheet: QuickSheet?
     @State private var showProfile = false
@@ -33,7 +32,7 @@ struct HomeView: View {
     /// Entries across the 28-day window + today (gates the one-time reminder prompt).
     @State private var historyEntryCount = 0
     /// Hero arrangement, chosen in the profile sheet.
-    @AppStorage(HomeGaugeLayout.storageKey, store: UserDefaults(suiteName: AppConfig.appGroup))
+    @AppStorage(HomeGaugeLayout.storageKey, store: HomeGaugeLayout.store)
     private var layoutRaw = HomeGaugeLayout.stacked.rawValue
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -63,7 +62,7 @@ struct HomeView: View {
                               selected: shownDay,
                               dayKcal: dayKcal,
                               onSelect: { selectedDay = $0 })
-                        .popoverTip(tips?.currentTip as? WeekStripTip)
+                        .coachAnchor(.week)
                         .pickleEntrance(index: 1)
 
                     hero
@@ -82,7 +81,7 @@ struct HomeView: View {
                                 onLogMeal(prediction.slot, nil)
                             }
                         }
-                        .popoverTip(tips?.currentTip as? PredictedTip)
+                        .coachAnchor(.predicted)
                         .pickleEntrance(index: 4)
                     }
 
@@ -116,8 +115,8 @@ struct HomeView: View {
         }
         .onAppear {
             syncDay()
-            // Home only exists post-onboarding; opens the gate for the first-run tips.
-            PickleTipsGate.onboarded = true
+            // Home only exists post-onboarding; start (or resume) the first-run tour.
+            coachMarks?.begin()
         }
         .onChange(of: store.revision) { _, _ in refreshDayKcal() }
         .onChange(of: store.diaryDay(today).totals.kcal) { old, new in
@@ -174,7 +173,7 @@ struct HomeView: View {
                          lineWidth: 13,
                          hasData: profile.targets.kcal > 0,
                          isEmptyDay: viewingToday && day.isEmpty)
-                    .popoverTip(tips?.currentTip as? GaugeTip)
+                    .coachAnchor(.gauge)
 
                 VStack(spacing: Spacing.m) {
                     MacroRowCompact(label: "Protein", grams: day.totals.proteinG,
@@ -197,7 +196,7 @@ struct HomeView: View {
                          isEmptyDay: viewingToday && day.isEmpty)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.s)
-                    .popoverTip(tips?.currentTip as? GaugeTip)
+                    .coachAnchor(.gauge)
 
                 MacroCardRow(consumed: day.totals, targets: profile.targets)
             }
@@ -228,7 +227,7 @@ struct HomeView: View {
             BellChip(missed: reminders.missedCount(today: store.diaryDay(today), todayKey: today)) {
                 showReminders = true
             }
-            .popoverTip(tips?.currentTip as? BellTip)
+            .coachAnchor(.bell)
 
             Button(action: onLog) {
                 PickleIcon(.search, size: 17)

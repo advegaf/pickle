@@ -10,6 +10,12 @@ enum HomeGaugeLayout: String, CaseIterable {
 
     static let storageKey = "pickle.homeLayout"
 
+    /// The ONE store instance every @AppStorage site must share. SwiftUI ties its
+    /// observation to the store object's identity: two views each creating their own
+    /// `UserDefaults(suiteName:)` persist fine but never see each other's writes live
+    /// (the bug where the layout only changed after an app relaunch).
+    static let store = UserDefaults(suiteName: AppConfig.appGroup)
+
     var title: String {
         switch self {
         case .stacked: return "Stacked"

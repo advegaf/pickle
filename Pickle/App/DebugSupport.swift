@@ -31,6 +31,10 @@ enum LaunchOptions {
     /// `--no-tips` suppresses all tips (UI probes and tip-free captures).
     static var hideTips: Bool { args.contains("--no-tips") }
 
+    /// `--tips-reset` wipes tip history WITHOUT forcing eligibility, so the ordered
+    /// first-run sequence replays exactly as production would show it.
+    static var resetTips: Bool { args.contains("--tips-reset") }
+
     private static var args: [String] { ProcessInfo.processInfo.arguments }
 }
 
