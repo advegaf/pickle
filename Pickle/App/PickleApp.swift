@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import UserNotifications
+import TipKit
 
 /// Hosts the notification-center delegate. Local-notification taps NEVER reach
 /// `onOpenURL`; they arrive here and are routed through ReminderService.
@@ -60,8 +61,19 @@ struct PickleApp: App {
                     HealthKitService.shared.refreshAuthorization()
                     store.refreshWidgetSnapshot()
                     reminders.reschedule()
-                    // First-run coach marks read their DEBUG launch-arg overrides
-                    // (--tips / --tips-reset / --no-tips) in CoachMarks.init.
+                    #if DEBUG
+                    if LaunchOptions.showTips {
+                        try? Tips.resetDatastore()
+                        Tips.showAllTipsForTesting()
+                    }
+                    if LaunchOptions.resetTips {
+                        try? Tips.resetDatastore()
+                    }
+                    if LaunchOptions.hideTips {
+                        Tips.hideAllTipsForTesting()
+                    }
+                    #endif
+                    try? Tips.configure()
                 }
         }
     }

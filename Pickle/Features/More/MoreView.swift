@@ -1,4 +1,5 @@
 import SwiftUI
+import TipKit
 import UIKit
 
 /// More: image-row navigation to settings and management screens (the reference's More tab).
@@ -258,7 +259,7 @@ struct AboutView: View {
                 store.deleteAllData()
                 ReminderService.shared.resetAll()
                 LogMetric.reset()
-                CoachMarks.reset()
+                try? Tips.resetDatastore()
                 UserDefaults(suiteName: AppConfig.appGroup)?
                     .removeObject(forKey: HomeGaugeLayout.storageKey)
                 Haptics.confirm()
