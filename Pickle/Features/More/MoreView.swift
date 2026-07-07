@@ -238,7 +238,7 @@ struct AboutView: View {
                 .buttonStyle(.pressable)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Version 0.1.0")
+                    Text(versionLine)
                     Text("Icons by Hugeicons")
                     #if DEBUG
                     // The north-star metric, visible where only builders look.
@@ -268,5 +268,14 @@ struct AboutView: View {
         } message: {
             Text("This permanently deletes your profile, diary, weights, and saved foods on this device. This can't be undone.")
         }
+    }
+
+    /// Reads the shipped version and build straight from the bundle, so the About
+    /// screen can never drift from what TestFlight actually installed.
+    private var versionLine: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let build = info?["CFBundleVersion"] as? String ?? "1"
+        return "Version \(version) (\(build))"
     }
 }
