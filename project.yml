@@ -11,7 +11,7 @@ settings:
     # iPhone-only: exempts the bundle from iPad multitasking's all-orientations rule.
     TARGETED_DEVICE_FAMILY: "1"
     MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "3"
+    CURRENT_PROJECT_VERSION: "4"
     SWIFT_VERSION: "5.0"
     DEVELOPMENT_TEAM: "DV483F72N3"
     CODE_SIGN_STYLE: Automatic
