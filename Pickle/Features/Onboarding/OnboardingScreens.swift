@@ -405,6 +405,8 @@ struct ReviewStep: View {
                         .font(PickleFont.caption())
                         .foregroundStyle(Palette.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
+
+                    PlanSources(compact: true)
                 }
                 .padding(.horizontal, Spacing.screen)
                 .padding(.top, Spacing.xl)

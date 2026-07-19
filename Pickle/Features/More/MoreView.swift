@@ -119,8 +119,11 @@ struct AppleHealthView: View {
                     .foregroundStyle(Palette.primary)
                 Text("Apple Health")
                     .font(PickleFont.display(28)).foregroundStyle(Palette.primary)
-                Text("Pickle writes the calories and macros you log to Health, and reads your body weight to keep your adaptive targets accurate.")
+                Text("Pickle uses Apple HealthKit to write the calories and macros you log to the Health app, and to read your body weight and body composition to keep your adaptive targets accurate.")
                     .font(PickleFont.body(15)).foregroundStyle(Palette.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("You control access anytime in the Health app under Sharing.")
+                    .font(PickleFont.caption(12)).foregroundStyle(Palette.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -130,8 +133,9 @@ struct AppleHealthView: View {
 
             if !health.hasConnected {
                 if !health.isAvailable {
-                    Text("Apple Health isn't available on this device.")
+                    Text("Apple Health isn't available on this device. On an iPhone, Pickle connects to HealthKit right here.")
                         .font(PickleFont.body(14)).foregroundStyle(Palette.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
                 } else {
                     PrimaryButton(title: working ? "Connecting…" : "Connect Apple Health", enabled: !working) {
                         working = true
@@ -214,6 +218,9 @@ struct AboutView: View {
                 Text("Pickle is a calorie and macro tracker built to feel like part of your phone, fast to log, honest about the math, and private by default.")
                     .font(PickleFont.body(16)).foregroundStyle(Palette.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                Text("Works with Apple Health: logged calories and macros sync to the Health app, and your body weight and lean mass are read to tune your plan.")
+                    .font(PickleFont.body(14)).foregroundStyle(Palette.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 SectionLabel(text: "Privacy")
                 Text("Your diary and health data stay on your device and sync privately through your iCloud. There's no account and no server holding your numbers.")
@@ -222,6 +229,8 @@ struct AboutView: View {
                 Text("The one exception is AI logging: when you describe or photograph a meal, that text or image is sent to an AI service to estimate macros, then discarded. Nothing else leaves your device. These estimates are approximate and not medical or dietary advice.")
                     .font(PickleFont.body(14)).foregroundStyle(Palette.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
+
+                PlanSources().padding(.top, Spacing.s)
 
                 SectionLabel(text: "Your data").padding(.top, Spacing.s)
                 Button { confirmDelete = true } label: {

@@ -209,6 +209,9 @@ struct CoachView: View {
                 MacroChip(value: "\(profile.targets.carbsG)g", label: "Carbs", tint: Palette.carbs)
                 MacroChip(value: "\(profile.targets.fatG)g", label: "Fat", tint: Palette.fat)
             }
+
+            PlanSources()
+                .padding(.top, Spacing.s)
         }
     }
 

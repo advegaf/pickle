@@ -52,6 +52,8 @@ struct RecalculateSheet: View {
                             }
                         }
                     }
+
+                    PlanSources(compact: true)
                 }
                 .padding(.horizontal, Spacing.screen)
                 .padding(.top, Spacing.l)
