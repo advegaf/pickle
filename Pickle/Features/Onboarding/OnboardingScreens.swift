@@ -86,7 +86,7 @@ struct HealthConnectStep: View {
                     .fixedSize(horizontal: false, vertical: true)
                 Text(connected
                      ? "Pickle pulled your numbers from Apple Health and tuned your plan. You can adjust anything next."
-                     : "Connect Apple Health and Pickle builds your plan from your real weight, body composition, and movement. The smartest setup in the market.")
+                     : "With access to Apple Health, Pickle builds your plan from your real weight, body composition, and movement. You choose what to share in the next step.")
                     .font(PickleFont.body(16))
                     .foregroundStyle(Palette.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -108,8 +108,10 @@ struct HealthConnectStep: View {
     }
 
     private var buttonTitle: String {
-        if working { return "Connecting…" }
-        return connected ? "Continue" : "Connect Apple Health"
+        // Neutral verb on the button that triggers the HealthKit prompt (App Review 5.1.1(iv):
+        // no persuasive "Connect" on a permission-leading button; the prose above explains why).
+        if working { return "Requesting access…" }
+        return "Continue"
     }
 
     private func importedSummary(_ bp: BodyProfile) -> some View {

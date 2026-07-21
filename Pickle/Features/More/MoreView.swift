@@ -137,7 +137,9 @@ struct AppleHealthView: View {
                         .font(PickleFont.body(14)).foregroundStyle(Palette.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
-                    PrimaryButton(title: working ? "Connecting…" : "Connect Apple Health", enabled: !working) {
+                    // Neutral verb (App Review 5.1.1(iv)); the description above explains what
+                    // continuing sets up.
+                    PrimaryButton(title: working ? "Requesting access…" : "Continue", enabled: !working) {
                         working = true
                         Task {
                             _ = await health.requestAuthorization()
