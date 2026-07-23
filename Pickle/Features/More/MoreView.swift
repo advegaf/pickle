@@ -250,7 +250,6 @@ struct AboutView: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(versionLine)
-                    Text("Icons by Hugeicons")
                     #if DEBUG
                     // The north-star metric, visible where only builders look.
                     if let median = LogMetric.median {
