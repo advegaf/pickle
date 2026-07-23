@@ -6,7 +6,7 @@ gauge (white -> green -> yellow -> orange, red only when over), natural-color fo
 and one warm accent for goal moments. Built for the fastest possible log: the category's real
 killer is logging friction, not motivation.
 
-Status: v1.5 (post-redesign) is feature complete, sim-verified, pre-TestFlight. Local-first;
+Status: live on the App Store (PICKLE Nutrition Tracker). Local-first;
 the AI proxy is scaffolded (`proxy/`, deploy pending) and sync stays off until after launch.
 
 ## What it does
@@ -58,7 +58,7 @@ xcodebuild -project Pickle.xcodeproj -scheme Pickle \
 DEBUG launch args for the screenshot loop: `--seed`, `--seed-empty`, `--seed-over`, `--reset`,
 `--tab N`, `--open log|ai|quick|detail|widgets|more-<route>`.
 
-Tests: 121 unit tests (store logic, prediction engine, reminder scheduling, week math, WCAG
+Tests: 125 unit tests (store logic, prediction engine, reminder scheduling, week math, WCAG
 contrast + ramp gates) + UI tests for More-tab routing and horizontal-pan regressions.
 
 ## Ship track (in progress)
