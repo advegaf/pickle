@@ -16,19 +16,19 @@ Deferred items with context. Effort scale: human team -> with Claude Code.
 - [ ] **Smarter reminder suppression** (P3, S)
   V1 cancels a meal's remaining fire for today when that meal is logged and reschedules a one-shot for tomorrow. If redundant reminders still slip through in practice (edge: logging within the fire minute), move to fully non-repeating 7-day scheduling refreshed on each app open. Start: `Pickle/Services/ReminderService.swift`.
 
-- [x] **Remove ANTHROPIC_API_KEY from Info.plist** — DONE 2026-07-04. The key lives only in a Cloudflare Worker secret; `PickleAnthropicKey` injection deleted from project.yml; built Info.plist verified clean.
+- [x] **Remove ANTHROPIC_API_KEY from Info.plist** - DONE 2026-07-04. The key lives only in a Cloudflare Worker secret; `PickleAnthropicKey` injection deleted from project.yml; built Info.plist verified clean.
 
 ## From the ship track (2026-07-04)
 
 - [ ] **Proxy abuse protection** (P1, S)
-  The Worker ships with no auth. Add rate limiting (Cloudflare WAF rule or KV counter) and/or DeviceCheck/App Attest before any build reaches strangers. Start: `proxy/src/index.ts`.
+  Add per-client rate limiting (Cloudflare WAF rule or KV counter) and DeviceCheck/App Attest so `/estimate` only answers real app installs. Start: `proxy/src/index.ts`.
 
 - [ ] **USDA FDC /search behind the proxy** (P2, M)
   FoodSearchService currently skips USDA ("lives behind the proxy... until the proxy exists"). Add a `/search` passthrough in the Worker + the app-side code path. Start: `Pickle/Services/FoodSearchService.swift`, `proxy/src/index.ts`.
 
 ## Pre-existing (from v1)
 
-- [x] **Deploy Cloudflare Worker proxy** — DONE 2026-07-04. Live at pickle-proxy.advegaf.workers.dev; real AI logging verified end-to-end in-app. (USDA /search passthrough still tracked above.)
+- [x] **Deploy Cloudflare Worker proxy** - DONE 2026-07-04. Real AI logging verified end-to-end in-app. (USDA /search passthrough still tracked above.)
 - [ ] **Flip CloudKit on** (P2, S) - `AppConfig.useCloudKit` + iCloud entitlement, needs paid dev account context.
 - [ ] **On-device verification pass** (P2, S) - barcode camera, HealthKit, CloudKit sync, widgets (App Group doesn't provision on unsigned sim builds).
 - [ ] **Real curated photography** (P3, M) - replace remaining `DuotonePlaceholder` uses.

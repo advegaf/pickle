@@ -1,80 +1,113 @@
 # PICKLE
 
-A premium native iOS calorie and macro tracker. SwiftUI, iPhone-only, true-OLED-black with a
-white/gray monochrome chrome; color is earned, not painted: a progressive Whoop-graded calorie
-gauge (white -> green -> yellow -> orange, red only when over), natural-color food photography,
-and one warm accent for goal moments. Built for the fastest possible log: the category's real
-killer is logging friction, not motivation.
+A native iOS calorie and macro tracker built for the fastest possible log. The
+category's real killer is logging friction, not motivation.
 
-Status: live on the App Store (PICKLE Nutrition Tracker). Local-first;
-the AI proxy is scaffolded (`proxy/`, deploy pending) and sync stays off until after launch.
+**[Live on the App Store](https://apps.apple.com/us/app/pickle-nutrition-tracker/id6787516850)**
+· iPhone only, iOS 26 · local-first, no account
+
+| Home | AI logging | Explore |
+|:---:|:---:|:---:|
+| ![Home](docs/screenshots/01-home.png) | ![AI logging](docs/screenshots/02-ai.png) | ![Explore](docs/screenshots/03-explore.png) |
+| **Coach** | **Activity** | |
+| ![Coach](docs/screenshots/04-coach.png) | ![Activity](docs/screenshots/05-activity.png) | |
+
+SwiftUI, true-OLED-black with white and gray chrome. Color is earned rather than
+painted: a progressive Whoop-graded calorie gauge (white, then green, yellow,
+orange, and red only when you are over), natural-color food photography, and one
+warm accent reserved for goal moments.
 
 ## What it does
 
-- **Home** — greeting header with reminders bell, a navigable week strip (tap a day; logging on a
-  past day backfills to that day), a 270-degree progressive calorie gauge with a glass lens knob,
-  monochrome macro cards, a **Predicted meal** card (local heuristic: your usual next meal, one tap
-  to log), today's meals, quick links.
-- **Log** (5 ways, from ANY tab via the floating bar) — Recents (one-tap re-log), Search (Open Food
-  Facts + a bundled ~80-item common-foods set), barcode Scan (VisionKit), AI photo + text estimate
-  (Claude via the proxy; realistic mock until it's deployed), and Quick add (raw kcal/P/C/F).
-- **Meal reminders** — real local notifications with generic lock-screen copy (never food names),
-  per-meal times, auto-skip for meals you already logged, tap -> Log sheet on that meal.
-- **Explore** — curated, one-tap-loggable **recipes** (natural-color photography) and categories.
-- **Coach** — an adaptive weekly target (a poor-man's MacroFactor from logged intake + weight
-  trend), plan transparency, and an AI "your coach" card that reads your patterns.
-- **Activity** — month calendar with day-states, streak, stats, per-day detail.
-- **More** — Goals & Plan, Apple Health, Favorites, Custom Foods, Loved Meals, Export (CSV/JSON),
-  About (with a DEBUG median seconds-to-log readout: the north-star metric, measured).
-- **WidgetKit** — lock + home-screen calorie arcs with the same progressive ramp, macros widget,
-  shared App Group snapshot.
+- **Home** - greeting header with reminders bell, a navigable week strip (tap a day;
+  logging on a past day backfills to that day), a 270-degree progressive calorie
+  gauge with a glass lens knob, monochrome macro cards, a **Predicted meal** card
+  (local heuristic: your usual next meal, one tap to log), today's meals, quick links.
+- **Log** (5 ways, from any tab via the floating bar) - Recents (one-tap re-log),
+  Search (Open Food Facts plus a bundled ~80-item common-foods set), barcode Scan
+  (VisionKit), AI photo and text estimate, and Quick add (raw kcal/P/C/F).
+- **Meal reminders** - real local notifications with generic lock-screen copy (never
+  food names), per-meal times, auto-skip for meals you already logged, tap opens the
+  Log sheet on that meal.
+- **Explore** - curated, one-tap-loggable **recipes** (natural-color photography)
+  and categories.
+- **Coach** - an adaptive weekly target (a poor-man's MacroFactor from logged intake
+  plus weight trend), plan transparency, and a card that reads your patterns.
+- **Activity** - month calendar with day-states, streak, stats, per-day detail.
+- **More** - Goals & Plan, Apple Health, Favorites, Custom Foods, Loved Meals,
+  Export (CSV/JSON), About (with a DEBUG median seconds-to-log readout: the
+  north-star metric, measured).
+- **WidgetKit** - lock and home-screen calorie arcs with the same progressive ramp,
+  macros widget, shared App Group snapshot.
 
 ## Stack
 
 - SwiftUI + **SwiftData** (`@Model`, local-first; CloudKit-compatible, sync currently off).
 - **XcodeGen** generates `Pickle.xcodeproj` from `project.yml` (the `.xcodeproj` is gitignored).
-- Design system: single token funnel (`Shared/PaletteValues.swift` -> app `Palette` + widget `W`,
-  drift is a compile error), SF Pro with Dynamic Type preserved via UIFontMetrics scaling,
-  Liquid Glass cards/bar (iOS 26), WCAG contrast gates enforced by unit tests.
+- Design system: single token funnel (`Shared/PaletteValues.swift` feeds app `Palette`
+  and widget `W`, so drift is a compile error), SF Pro with Dynamic Type preserved via
+  UIFontMetrics scaling, Liquid Glass cards/bar (iOS 26), WCAG contrast gates enforced
+  by unit tests.
 - Icons: Hugeicons (stroke-rounded) as template PDFs, plus a few Lucide glyphs.
-- **iOS 26** deployment target. Targets: `Pickle` (app), `PickleWidgetExtension`, `PickleTests`,
-  `PickleUITests`. Shared snapshot + palette code in `Shared/`. AI proxy Worker in `proxy/`.
+- **iOS 26** deployment target. Targets: `Pickle` (app), `PickleWidgetExtension`,
+  `PickleTests`, `PickleUITests`. Shared snapshot and palette code in `Shared/`. AI
+  proxy Worker in `proxy/`.
 
 ## Build & run
 
+No API key is needed to build. AI logging goes through the deployed Worker, so the
+example config covers everything else.
+
 ```bash
-# 1. Secrets (no key ever gets committed; production uses the proxy)
 cp Config/Secrets.example.xcconfig Config/Secrets.xcconfig
-
-# 2. Generate the project
-/opt/homebrew/bin/xcodegen generate
-
-# 3. Build + test on the simulator
-xcodebuild -project Pickle.xcodeproj -scheme Pickle \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
-  -derivedDataPath /tmp/pickle-dd CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO test
+xcodegen generate
 ```
 
-DEBUG launch args for the screenshot loop: `--seed`, `--seed-empty`, `--seed-over`, `--reset`,
-`--tab N`, `--open log|ai|quick|detail|widgets|more-<route>`.
+Pick a simulator and run the suite against it by id. Matching on name alone is
+ambiguous if you have more than one iPhone 17 Pro installed:
 
-Tests: 125 unit tests (store logic, prediction engine, reminder scheduling, week math, WCAG
-contrast + ramp gates) + UI tests for More-tab routing and horizontal-pan regressions.
+```bash
+xcrun simctl list devices available | grep 'iPhone 17 Pro'
 
-## Ship track (in progress)
+xcodebuild -project Pickle.xcodeproj -scheme Pickle \
+  -destination 'platform=iOS Simulator,id=PUT-A-UDID-HERE' \
+  -derivedDataPath /tmp/pickle-dd \
+  CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO test
+```
 
-1. **Device verification pass** — glass scroll performance, reminders end-to-end, widgets on the
-   springboard (signed build ready; waiting on hardware).
-2. **Deploy the proxy** (`proxy/README.md`) — moves the Anthropic key fully server-side and turns
-   on real AI logging. Fast follows tracked in TODOS.md (rate limiting, USDA search passthrough).
-3. **TestFlight** — Release archive verified; CloudKit stays off for the first build.
+DEBUG launch args for the screenshot loop: `--seed`, `--seed-empty`, `--seed-over`,
+`--reset`, `--tab N`, `--open log|ai|quick|detail|widgets|more-<route>`.
 
-Before charging (later): StoreKit 2 paywall, legal (privacy policy/terms/labels), iCloud sync on
-with two-device validation. See TODOS.md for the full deferred list.
+## Tests
+
+125 unit tests, green: store logic, prediction engine, reminder scheduling, week
+math, and the WCAG contrast and ramp gates. Plus UI tests for More-tab routing and
+horizontal-pan regressions. No third-party dependencies in any target.
+
+## Notes and tradeoffs
+
+**The AI key never ships in the binary.** The first version put the Anthropic key in
+`Info.plist`, which anyone can pull out of a build with `unzip` and `plutil`. It now
+exists only as a Cloudflare Worker secret and the app calls `/estimate`. That
+relocates the trust boundary to the server, where the next step is App Attest so the
+endpoint only answers real installs.
+
+**The model is not trusted.** `parseItems` in the Worker pulls the first JSON object
+out of the response and clamps every field before the app ever sees it: at most six
+items, calories to 0-4000, macros to 0-1000, confidence to 0-1. The app then applies
+its own sanity gate on top. Two independent checks, because a tracker that
+occasionally logs 40,000 calories is worse than one that occasionally logs nothing.
+
+**Sync is designed but off.** The SwiftData models are CloudKit-legal and
+`AppConfig.useCloudKit` is `false`. The merge logic is unit-tested against simulated
+histories rather than two real devices, and those tests prove the merge function, not
+the sync. Turning it on is a device-verification job, not a code one, so it stays off
+until that happens.
 
 ## Privacy
 
-Diary and health data stay on device (and in your iCloud once sync is on). Notifications never
-show food names on the lock screen. The one exception to on-device: AI logging sends the described
-or photographed meal to the AI service to estimate macros, then discards it. `Config/Secrets.xcconfig`
-and the reference frames are gitignored.
+Diary and health data stay on device (and in your iCloud once sync is on).
+Notifications never show food names on the lock screen. The one exception to
+on-device: AI logging sends the described or photographed meal to the AI service to
+estimate macros, then discards it. `Config/Secrets.xcconfig` and the reference frames
+are gitignored.
