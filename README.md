@@ -5,7 +5,7 @@
 <h1 align="center">PICKLE</h1>
 
 <p align="center">
-  A native iOS calorie and macro tracker built for the fastest possible log. What kills a tracker is not motivation, it is the friction of opening it.
+  A native iOS calorie and macro tracker built for the fastest possible log. Most people quit a tracker in the twenty seconds between deciding to log lunch and having logged it.
 </p>
 
 <p align="center">
@@ -20,11 +20,10 @@
   <sub>Free on the App Store. iPhone, iOS 26. Local first, no account.</sub>
 </p>
 
-Every calorie tracker is a search box and a database. The work is in the twenty
-seconds between deciding to log lunch and having logged it, and that is where
-people quit. Pickle is built around that number: there is a DEBUG readout in
-About showing the median seconds to log, because the thing you do not measure is
-the thing you do not fix.
+Every calorie tracker is a search box over a database, and they mostly differ in
+how long they make you wait. Pickle is built around that number: there is a
+DEBUG readout in About showing the median seconds to log, which is the only way
+to tell whether a change to the log flow actually helped or just felt faster.
 
 There are five ways to log, all reachable from the floating bar on any tab.
 Recents re-logs something in one tap. Search covers Open Food Facts plus a
