@@ -28,3 +28,7 @@ Icon?
 
 # Reference frames (large screenshots, kept locally for the fidelity loop)
 Equinox+ iOS Frames/
+
+# Agent and tooling local state
+.agents/
+proxy/.wrangler/
